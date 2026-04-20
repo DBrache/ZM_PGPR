@@ -1,0 +1,186 @@
+---
+title: "fastANI_matrix"
+author: "Diane"
+date: "2025-05-26"
+output: html_document
+---
+#code adapted from here https://github.com/spencer411/FastANI_heatmap/blob/main/fastANI_heatmap.R
+```{r}
+library("reshape2")
+library("ComplexHeatmap")
+library("gplots")
+
+### get data, convert to matrix
+x <- read.table("./data/fastANI-1_out")
+matrix <- acast(x, V1~V2, value.var="V3")
+matrix[is.na(matrix)] <- 70
+
+### define the colors within 2 zones
+breaks = seq(min(matrix), max(100), length.out=100)
+gradient1 = colorpanel( sum( breaks[-1]<=95 ), "red", "white" )
+gradient2 = colorpanel( sum( breaks[-1]>95 & breaks[-1]<=100), "white", "blue" )
+
+hm.colors = c(gradient1, gradient2)
+heatmap.2(matrix, scale = "none", trace = "none", col = hm.colors, cexRow=.30, cexCol=.30)
+
+```
+
+```{r}
+library("reshape2")
+library("gplots")
+
+# Load mapping file
+name_map <- read.csv("./data/fasta_name_map.csv", stringsAsFactors = FALSE)
+
+# Ensure file names have no paths
+name_map$filename <- basename(name_map$filename)
+
+# Remove `.fasta` extensions from filenames
+name_map$filename <- sub("\\.fasta$", "", name_map$filename)
+
+# Read fastANI output
+x <- read.table("fastANI-1_out", stringsAsFactors = FALSE)
+
+# Remove `.fasta` extension and paths from V1 and V2
+x$V1 <- sub("\\.fasta$", "", basename(x$V1))
+x$V2 <- sub("\\.fasta$", "", basename(x$V2))
+
+# Map real names
+name_dict <- setNames(name_map$bacterium_name, name_map$filename)
+x$V1 <- name_dict[x$V1]
+x$V2 <- name_dict[x$V2]
+
+# Make matrix
+matrix <- acast(x, V1 ~ V2, value.var = "V3")
+matrix[is.na(matrix)] <- 70
+
+# Define heatmap colors
+breaks = seq(min(matrix), max(100), length.out=100)
+gradient1 = colorpanel(sum(breaks[-1] <= 98), "red", "white")
+gradient2 = colorpanel(sum(breaks[-1] > 98 & breaks[-1] <= 100), "white", "blue")
+hm.colors = c(gradient1, gradient2)
+
+# Save to SVG file
+svg("Isolate_ani_heatmap.svg", width = 10, height = 10)  # adjust size as needed
+
+# Plot heatmap
+heatmap.2(
+  matrix,
+  scale = "none",
+  trace = "none",
+  col = hm.colors,
+  cexRow = 0.5,   # Increase row label size (default ~0.3)
+  cexCol = 0.5,   # Increase column label size
+  margins = c(10, 10)  # Increase margin space if labels are long
+)
+
+# Close the SVG device
+dev.off()
+```
+
+```{r}
+# Define heatmap colors (single gradient)
+breaks <- seq(min(matrix), 100, length.out = 100)
+hm.colors <- colorpanel(length(breaks) - 1, "blue", "white", "red")
+# Plot heatmap
+heatmap.2(matrix, scale = "none", trace = "none", col = hm.colors, cexRow = 0.30, cexCol = 0.30)
+
+
+```
+
+```{r}
+library(ComplexHeatmap)
+library(circlize)
+
+# Create a heatmap object (instead of plotting directly)
+ht <- Heatmap(matrix, 
+              col = colorRamp2(c(70, 98, 100), c( "orange", "white", "blue")),
+              row_names_gp = gpar(fontsize = 10),
+              column_names_gp = gpar(fontsize = 10))
+
+ht
+```
+
+# load name map
+
+```{r}
+library(readxl)
+
+name_map_ANI <- read_xlsx("./data/name_map.xlsx")
+
+name_vector <- setNames(name_map_ANI$short_name, name_map_ANI$original_name)
+
+```
+
+# Lets change the colors to something easier on the eyes.
+```{r}
+library(ComplexHeatmap)
+library(circlize)
+
+short_names <- name_vector[rownames(matrix)]  # works for both axes
+
+# Create a heatmap object (instead of plotting directly)
+ht <- Heatmap(matrix, 
+              col = colorRamp2(c(80, 86.5, 94.5, 98.7, 99.5, 100), c( "grey86", "dodgerblue4","darkcyan", "lightgoldenrod", "darksalmon", "firebrick")),
+              row_names_gp = gpar(fontsize = 10),
+              column_names_gp = gpar(fontsize = 10),
+              row_names = short_names,
+              column_names = short_names,  # same mapping since names are identical
+              heatmap_legend_param = list(
+                at = legend_breaks,
+                labels = as.character(legend_breaks)
+                )
+)
+
+ht
+
+
+```
+
+```{r}
+library(ComplexHeatmap)
+library(circlize)
+
+short_names <- name_vector[rownames(matrix)]  # works for both axes
+
+# Define custom color breaks and corresponding colors
+col_fun <- colorRamp2(
+  c(0,81.99, 82, 86.5, 94.5, 98.7, 99.5, 100),
+  c("grey85", "grey85", "dodgerblue4", "darkseagreen3", "lightgoldenrodyellow", "peachpuff", "orange", "firebrick")
+)
+
+# Define legend breaks starting from 80 for the legend display only
+legend_breaks <- c(82, 86.5, 94.5, 98.7, 99.5, 100)
+
+ht <- Heatmap(matrix,
+              col = col_fun,
+              row_names_gp = gpar(fontsize = 8),
+              column_names_gp = gpar(fontsize = 8),
+              row_labels = short_names,
+              column_labels = short_names,
+              heatmap_legend_param = list(
+                title = "ANI Value",
+                at = legend_breaks,
+                labels = as.character(legend_breaks)
+              ),
+              rect_gp = gpar(col = "white", lwd = .1)  # white grid lines between cells
+)
+            
+ht
+
+
+```
+
+# lets save that bad boy
+
+```{r}
+# Open PNG device
+png(filename = "ANI_heatmap.png", width = 1000, height = 1000, res = 125)  # adjust size and resolution as needed
+
+# Draw the heatmap
+draw(ht)  # or draw(ht_combined) if using combined heatmap
+
+# Close the device to write the file
+dev.off()
+
+```

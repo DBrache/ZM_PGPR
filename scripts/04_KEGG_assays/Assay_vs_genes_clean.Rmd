@@ -1,0 +1,570 @@
+---
+title: "Assay vs Genes - Clean Verification"
+author: "Diane"
+date: "2026-03-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(dplyr)
+```
+
+# Import data
+```{r import}
+assay_genome_path <- "./data/Assay_vs_Genomes.xlsx"
+
+df_assay_genome <- read_excel(assay_genome_path)
+
+# Remove any fully empty rows
+df_assay_genome <- df_assay_genome %>% filter(!is.na(isolate_number))
+
+cat("Total isolates:", nrow(df_assay_genome), "\n")
+```
+
+# Define pathway gene sets and filter columns
+```{r define_pathways}
+meta_cols <- c(
+  "Phylum", "Class", "Order", "Family", "Genus",
+  "isolate_number", "GTDB_hit_iso_number",
+  "N_fixing", "S_Oxid", "S_Red", "IAA_production", "P_solubility"
+)
+
+pathway_genes <- list(
+  Nitrogen_fixation = c("K02586", "K02588", "K02591"),
+  Denitrification = c("K00368", "K00370", "K00371", "K00374", "K00376",
+                      "K02305", "K02567", "K02568", "K04561", "K15864"),
+  DNRA = c("K00362", "K00363", "K03385", "K15876"),
+  C_N_Bond_cleavage = c("K00274", "K01426", "K01501"),
+  Sulfur_oxidation_SOX = c("K17222", "K17223", "K17224", "K17225", "K17226", "K17227", "K22622"),
+  Sulfide_oxidation = c("K17229", "K17230"),
+  Assimilatory_sulfur_reduction = c("K00380", "K00381", "K00392"),
+  Thiosulfate_oxidation_non_SOX = c("K16936", "K16937", "K19713"),
+  Phosphate_solubilizing = c("K01113", "K01077", "K00117"),
+  Indole_Acetic_Acid = c("K00466", "K00832", "K04103", "K21801")
+)
+
+all_kegg_ids <- unlist(pathway_genes)
+cols_to_keep <- intersect(c(meta_cols, all_kegg_ids), names(df_assay_genome))
+df <- df_assay_genome[, cols_to_keep]
+
+cat("Columns kept:", length(cols_to_keep), "\n")
+```
+
+# Helper function
+```{r helper}
+has_any_gene <- function(df, genes) {
+  present <- intersect(genes, names(df))
+  if (length(present) == 0) return(rep(FALSE, nrow(df)))
+  rowSums(df[, present, drop = FALSE] == 1, na.rm = TRUE) > 0
+}
+
+has_all_genes <- function(df, genes) {
+  present <- intersect(genes, names(df))
+  if (length(present) == 0) return(rep(FALSE, nrow(df)))
+  rowSums(df[, present, drop = FALSE] == 1, na.rm = TRUE) == length(present)
+}
+```
+
+---------------
+# NITROGEN
+---------------
+
+## Overall nitrogen gene counts
+```{r nitrogen_overview}
+Nitrogen_fixation <- c("K02586", "K02588", "K02591")
+Denitrification <- c("K00368", "K00370", "K00371", "K00374", "K00376",
+                    "K02305", "K02567", "K02568", "K04561", "K15864")
+DNRA <- c("K00362", "K00363", "K03385", "K15876")
+C_N_Bond_cleavage <- c("K00274", "K01426", "K01501")
+
+df$has_N_fixation_genes <- has_any_gene(df, Nitrogen_fixation)
+df$has_denitrification_genes <- has_any_gene(df, Denitrification)
+df$has_DNRA_genes <- has_any_gene(df, DNRA)
+df$has_C_N_bond_cleavage_genes <- has_any_gene(df, C_N_Bond_cleavage)
+
+df$has_any_N_pathway_gene <- (
+  df$has_N_fixation_genes |
+  df$has_denitrification_genes |
+  df$has_DNRA_genes |
+  df$has_C_N_bond_cleavage_genes
+)
+
+total <- nrow(df)
+cat("=== NITROGEN GENE COUNTS (all isolates) ===\n")
+cat("N fixation (nifHDK):", sum(df$has_N_fixation_genes),
+    sprintf("(%.1f%%)", sum(df$has_N_fixation_genes)/total*100),
+    "| Manuscript: 10%\n")
+cat("Denitrification:", sum(df$has_denitrification_genes),
+    sprintf("(%.1f%%)", sum(df$has_denitrification_genes)/total*100),
+    "| Manuscript: 51%\n")
+cat("DNRA:", sum(df$has_DNRA_genes),
+    sprintf("(%.1f%%)", sum(df$has_DNRA_genes)/total*100),
+    "| Manuscript: 71%\n")
+cat("C-N bond cleavage:", sum(df$has_C_N_bond_cleavage_genes),
+    sprintf("(%.1f%%)", sum(df$has_C_N_bond_cleavage_genes)/total*100),
+    "| Manuscript: 83%\n")
+cat("ANY N mobilization:", sum(df$has_any_N_pathway_gene),
+    sprintf("(%.1f%%)", sum(df$has_any_N_pathway_gene)/total*100),
+    "| Manuscript: ~96%\n")
+```
+
+## N-fixing assay results vs genes
+```{r nitrogen_assay}
+cat("N_fixing assay positive:", sum(df$N_fixing == 1, na.rm = TRUE),
+    "| Manuscript: 37\n\n")
+
+n_fix_pos <- df %>% filter(N_fixing == 1)
+
+summary_n <- n_fix_pos %>%
+  summarize(
+    total_N_fix_pos = n(),
+    with_nifHDK = sum(has_N_fixation_genes),
+    with_CN_bond = sum(has_C_N_bond_cleavage_genes),
+    with_denitrification = sum(has_denitrification_genes),
+    with_DNRA = sum(has_DNRA_genes),
+    with_nifHDK_or_CN = sum(has_N_fixation_genes | has_C_N_bond_cleavage_genes),
+    lacking_both_nif_and_CN = sum(!has_N_fixation_genes & !has_C_N_bond_cleavage_genes)
+  )
+print(summary_n)
+```
+
+## Identify isolates with nifHDK (robust growers per manuscript)
+```{r nifHDK_isolates}
+cat("=== Isolates with nifHDK genes ===\n")
+cat("Manuscript says: 6 robust growers included Agarivorans sp. with nifHDK\n\n")
+
+nifHDK_isolates <- df %>%
+  filter(has_N_fixation_genes) %>%
+  select(isolate_number, GTDB_hit_iso_number, Family, N_fixing)
+print(nifHDK_isolates)
+cat("\nCount:", nrow(nifHDK_isolates), "\n")
+```
+
+## NirBD verification for isolates lacking nifHDK and C:N bond cleavage
+```{r nirBD_check}
+# Manuscript says: Two isolates, Thalassospira lohafexi and Vibrio Splendidus,
+# lacked nitrilase/amidase/MOA but contained assimilatory nitrite reductase (NirBD)
+# NirBD = K00362 (nirB) + K00363 (nirD)
+
+NirBD <- c("K00362", "K00363")
+df$has_nirBD <- has_any_gene(df, NirBD)
+
+cat("=== N_fixing+ isolates lacking BOTH nifHDK AND C:N bond cleavage genes ===\n")
+cat("Manuscript says: 2 (Thalassospira lohafexi, Vibrio Splendidus) with NirBD\n\n")
+
+n_fix_no_nif_no_cn <- df %>%
+  filter(N_fixing == 1, !has_N_fixation_genes, !has_C_N_bond_cleavage_genes) %>%
+  select(isolate_number, GTDB_hit_iso_number, Family,
+         has_nirBD, has_DNRA_genes, has_denitrification_genes)
+
+print(n_fix_no_nif_no_cn)
+
+# Also show individual nirB/nirD presence
+nirBD_detail <- df %>%
+  filter(N_fixing == 1, !has_N_fixation_genes, !has_C_N_bond_cleavage_genes) %>%
+  select(isolate_number, GTDB_hit_iso_number,
+         K00362, K00363)  # nirB, nirD
+print(nirBD_detail)
+```
+
+## N_fixing+ with C:N bond cleavage (nitrogen scavengers)
+```{r cn_bond_scavengers}
+# Manuscript says: 29 of the 31 limited-growth isolates coded for
+# nitrilase (K01501), amidase amiE (K01426), and/or monoamine oxidase MOA (K00274)
+
+n_fix_with_cn <- df %>%
+  filter(N_fixing == 1, !has_N_fixation_genes, has_C_N_bond_cleavage_genes)
+
+cat("N_fix+ with C:N bond cleavage (no nifHDK):", nrow(n_fix_with_cn),
+    "| Manuscript: 29\n\n")
+
+# Breakdown by individual gene
+n_fix_no_nif <- df %>% filter(N_fixing == 1, !has_N_fixation_genes)
+cat("Among N_fix+ without nifHDK (n=", nrow(n_fix_no_nif), "):\n")
+cat("  with K01501 (nitrilase):", sum(n_fix_no_nif$K01501 == 1, na.rm = TRUE), "\n")
+cat("  with K01426 (amidase amiE):", sum(n_fix_no_nif$K01426 == 1, na.rm = TRUE), "\n")
+cat("  with K00274 (monoamine oxidase):", sum(n_fix_no_nif$K00274 == 1, na.rm = TRUE), "\n")
+```
+
+## Summary table for N_fixing positive isolates
+```{r nitrogen_summary_table}
+summary_simple <- df %>%
+  filter(N_fixing == 1) %>%
+  select(Class, Family, GTDB_hit_iso_number,
+         has_N_fixation_genes, has_C_N_bond_cleavage_genes,
+         has_denitrification_genes, has_DNRA_genes, has_nirBD) %>%
+  mutate(
+    Notes = case_when(
+      has_N_fixation_genes ~ "Has nifHDK (robust grower)",
+      has_C_N_bond_cleavage_genes ~ "N scavenger (nitrilase/amidase/MOA)",
+      has_nirBD ~ "Has NirBD only",
+      TRUE ~ "No known N genes"
+    )
+  )
+print(summary_simple)
+```
+
+---------------
+# SULFUR
+---------------
+
+## Overall sulfur gene counts
+```{r sulfur_overview}
+Sulfur_oxidation_SOX <- c("K17222", "K17223", "K17224", "K17225", "K17226", "K17227", "K22622")
+Sulfide_oxidation <- c("K17229", "K17230")
+Thiosulfate_oxidation_non_SOX <- c("K16936", "K16937", "K19713")
+Assimilatory_sulfate_reduction <- c("K00380", "K00381", "K00392")
+
+df$has_Sox_genes <- has_any_gene(df, Sulfur_oxidation_SOX)
+df$has_sulfide_oxidation_genes <- has_any_gene(df, Sulfide_oxidation)
+df$has_thiosulfate_oxidation_genes <- has_any_gene(df, Thiosulfate_oxidation_non_SOX)
+df$has_assimilatory_sulfate_reduction <- has_any_gene(df, Assimilatory_sulfate_reduction)
+
+# Sulfur/thiosulfate oxidation genes (SOX + sulfide + thiosulfate non-SOX)
+all_sulfur_ox <- c(Sulfur_oxidation_SOX, Sulfide_oxidation, Thiosulfate_oxidation_non_SOX)
+df$has_any_sulfur_ox_gene <- has_any_gene(df, all_sulfur_ox)
+
+# Any sulfur gene
+df$has_any_sulfur_gene <- (
+  df$has_Sox_genes | df$has_sulfide_oxidation_genes |
+  df$has_thiosulfate_oxidation_genes | df$has_assimilatory_sulfate_reduction
+)
+
+cat("=== SULFUR GENE COUNTS (all isolates) ===\n")
+cat("With SOX genes:", sum(df$has_Sox_genes), "\n")
+cat("With sulfide oxidation:", sum(df$has_sulfide_oxidation_genes), "\n")
+cat("With thiosulfate non-SOX:", sum(df$has_thiosulfate_oxidation_genes), "\n")
+cat("With assimilatory sulfate reduction (cysI/cysJ/sir):", sum(df$has_assimilatory_sulfate_reduction), "\n")
+cat("With any sulfur/thiosulfate OXIDATION gene:", sum(df$has_any_sulfur_ox_gene),
+    sprintf("(%.1f%%)", sum(df$has_any_sulfur_ox_gene)/total*100),
+    "| Manuscript: 52%\n")
+cat("With any sulfur gene:", sum(df$has_any_sulfur_gene), "\n")
+```
+
+## Sulfur assay results
+```{r sulfur_assay}
+cat("S_Oxid positive (acidified):", sum(df$S_Oxid == 1, na.rm = TRUE),
+    "| Manuscript: 9\n")
+cat("S_Red positive:", sum(df$S_Red == 1, na.rm = TRUE), "\n")
+cat("S_Oxid OR S_Red:", sum(df$S_Oxid == 1 | df$S_Red == 1, na.rm = TRUE),
+    "| Manuscript: 41 grew on thiosulfate\n")
+```
+
+## Complete soxABCXYZ check
+```{r complete_sox}
+# Manuscript says: only Roseibium sp. (iso195) had the complete set (soxABCXYZ)
+# Check which SOX genes are actually in the data
+sox_genes_available <- intersect(Sulfur_oxidation_SOX, names(df))
+cat("SOX genes available in data:", paste(sox_genes_available, collapse=", "), "\n")
+cat("SOX genes NOT in data:", paste(setdiff(Sulfur_oxidation_SOX, names(df)), collapse=", "), "\n\n")
+
+df$has_complete_SOX <- has_all_genes(df, Sulfur_oxidation_SOX)
+
+cat("=== Isolates with COMPLETE SOX complex ===\n")
+cat("Manuscript says: only Roseibium sp. (iso195)\n\n")
+
+complete_sox <- df %>%
+  filter(has_complete_SOX) %>%
+  select(isolate_number, GTDB_hit_iso_number, Family)
+print(complete_sox)
+cat("Count:", nrow(complete_sox), "\n")
+```
+
+## Verify cysI/cysJ/sir among thiosulfate growers
+```{r cysI_cysJ_sir_check}
+# Manuscript says: All 41 isolates, except Rossellomorea sp. (iso230),
+# had sulfite reductase [NADPH] (cysI, cysJ) or sulfite reductase ferredoxin (sir)
+
+thio_growers <- df %>% filter(S_Oxid == 1 | S_Red == 1)
+
+cat("=== Thiosulfate growers WITHOUT cysI/cysJ/sir ===\n")
+cat("Manuscript says: only Rossellomorea sp. (iso230)\n\n")
+
+thio_no_assim <- thio_growers %>%
+  filter(!has_assimilatory_sulfate_reduction) %>%
+  select(isolate_number, GTDB_hit_iso_number, Family, S_Oxid, S_Red)
+print(thio_no_assim)
+cat("Count without cysI/cysJ/sir:", nrow(thio_no_assim), "\n")
+cat("Count with cysI/cysJ/sir:", nrow(thio_growers) - nrow(thio_no_assim), "\n")
+```
+
+## S_Oxid positive (acidified) isolates detail
+```{r sulfur_oxid_detail}
+cat("=== S_Oxid positive isolates and families ===\n")
+cat("Manuscript families: Micrococcaceae, Streptomycetaceae, Bacillaceae,\n")
+cat("  Alteromonadaceae, Stappiaceae, Vibrionaceae\n\n")
+
+s_oxid_pos <- df %>%
+  filter(S_Oxid == 1) %>%
+  select(isolate_number, GTDB_hit_iso_number, Family,
+         has_Sox_genes, has_sulfide_oxidation_genes,
+         has_thiosulfate_oxidation_genes, has_assimilatory_sulfate_reduction,
+         has_complete_SOX)
+print(s_oxid_pos)
+
+cat("\nFamilies of S_Oxid positive isolates:\n")
+s_oxid_families <- df %>% filter(S_Oxid == 1) %>% count(Family, sort = TRUE)
+print(s_oxid_families)
+```
+
+## Sulfur phenotype summary table
+```{r sulfur_summary_table}
+sulfur_pheno_pos <- df %>%
+  filter(S_Oxid == 1 | S_Red == 1) %>%
+  select(Class, Family, GTDB_hit_iso_number,
+         S_Oxid, S_Red,
+         has_Sox_genes, has_sulfide_oxidation_genes,
+         has_thiosulfate_oxidation_genes, has_assimilatory_sulfate_reduction,
+         has_complete_SOX) %>%
+  mutate(
+    Notes = case_when(
+      has_complete_SOX ~ "Complete SOX complex",
+      !(has_Sox_genes | has_sulfide_oxidation_genes |
+        has_thiosulfate_oxidation_genes | has_assimilatory_sulfate_reduction) ~
+        "Phenotype positive, lacks sulfur genes",
+      TRUE ~ ""
+    )
+  )
+print(sulfur_pheno_pos)
+```
+
+## Phenotype positive but lacking sulfur genes
+```{r sulfur_phenotype_no_genes}
+phenotype_pos_no_genes <- df %>%
+  filter(
+    (S_Oxid == 1 | S_Red == 1) &
+    !(has_Sox_genes | has_sulfide_oxidation_genes |
+      has_thiosulfate_oxidation_genes | has_assimilatory_sulfate_reduction)
+  ) %>%
+  select(isolate_number, GTDB_hit_iso_number, S_Oxid, S_Red)
+cat("Sulfur phenotype positive but lacking all screened genes:\n")
+print(phenotype_pos_no_genes)
+```
+
+## Phenotype negative but with sulfur genes
+```{r sulfur_neg_with_genes}
+phenotype_neg_with_genes <- df %>%
+  filter(
+    S_Oxid == 0 & S_Red == 0 &
+    (has_Sox_genes | has_sulfide_oxidation_genes |
+     has_thiosulfate_oxidation_genes | has_assimilatory_sulfate_reduction)
+  ) %>%
+  select(isolate_number, GTDB_hit_iso_number,
+         has_Sox_genes, has_sulfide_oxidation_genes,
+         has_thiosulfate_oxidation_genes, has_assimilatory_sulfate_reduction)
+cat("Sulfur phenotype negative but with sulfur genes:\n")
+print(phenotype_neg_with_genes)
+```
+
+---------------
+# PHOSPHORUS
+---------------
+
+## Overall phosphorus gene counts
+```{r phosphorus_overview}
+p_genes <- c("K01113", "K01077", "K00117")  # phoD, phoA, gcd
+df$has_any_P_gene <- has_any_gene(df, p_genes)
+
+cat("=== PHOSPHORUS GENE COUNTS (all isolates) ===\n")
+cat("With any P-solubilizing gene:", sum(df$has_any_P_gene),
+    sprintf("(%.1f%%)", sum(df$has_any_P_gene)/total*100),
+    "| Manuscript: 88.5%\n")
+cat("  phoD (K01113):", sum(df$K01113 == 1, na.rm = TRUE), "\n")
+cat("  phoA (K01077):", sum(df$K01077 == 1, na.rm = TRUE), "\n")
+cat("  gcd  (K00117):", sum(df$K00117 == 1, na.rm = TRUE), "\n")
+```
+
+## P_solubility assay vs genes
+```{r phosphorus_assay}
+cat("P_solubility positive:", sum(df$P_solubility == 1, na.rm = TRUE), "\n\n")
+
+p_sol_pos <- df %>% filter(P_solubility == 1)
+
+cat("Among P_solubility positive isolates:\n")
+cat("  with phoD (K01113):", sum(p_sol_pos$K01113 == 1, na.rm = TRUE), "\n")
+cat("  with phoA (K01077):", sum(p_sol_pos$K01077 == 1, na.rm = TRUE), "\n")
+cat("  with gcd  (K00117):", sum(p_sol_pos$K00117 == 1, na.rm = TRUE), "\n")
+cat("  with any P gene:", sum(has_any_gene(p_sol_pos, p_genes)), "\n")
+cat("  with both phoD and phoA:", sum(p_sol_pos$K01113 == 1 & p_sol_pos$K01077 == 1, na.rm = TRUE), "\n")
+```
+
+## P phenotype positive but lacking genes
+```{r phosphorus_no_genes}
+p_pos_no_genes <- df %>%
+  filter(P_solubility == 1 & !has_any_P_gene) %>%
+  select(isolate_number, GTDB_hit_iso_number, P_solubility, K01113, K01077, K00117)
+cat("P_solubility positive but lacking all P genes:\n")
+print(p_pos_no_genes)
+```
+
+## P phenotype negative but with genes
+```{r phosphorus_neg_with_genes}
+p_neg_with_genes <- df %>%
+  filter(P_solubility == 0 & has_any_P_gene) %>%
+  select(isolate_number, GTDB_hit_iso_number, K01113, K01077, K00117)
+cat("P_solubility negative but with P genes:\n")
+print(p_neg_with_genes)
+
+cat("\nFamilies of P_sol negative with P genes:\n")
+df %>%
+  filter(P_solubility == 0 & has_any_P_gene) %>%
+  count(Family, sort = TRUE) %>%
+  print()
+```
+
+## Family-level P_solubility discordance
+```{r phosphorus_family}
+family_summary <- df %>%
+  group_by(Family) %>%
+  summarise(
+    n_total = n(),
+    n_pos = sum(P_solubility == 1, na.rm = TRUE),
+    n_neg_with_genes = sum(P_solubility == 0 & has_any_P_gene, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(n_pos > 0 & n_neg_with_genes > 0)
+cat("Families with both P+ isolates and P- isolates carrying P genes:\n")
+print(family_summary)
+```
+
+---------------
+# IAA (Indole-3-Acetic Acid)
+---------------
+
+## Overall IAA gene counts
+```{r iaa_overview}
+iaa_genes <- c("K00466", "K21801", "K04103", "K00832")  # iaaM, iaaH, ipdC, tryB
+df$has_any_iaa_gene <- has_any_gene(df, iaa_genes)
+
+cat("=== IAA GENE COUNTS (all isolates) ===\n")
+cat("With any IAA gene:", sum(df$has_any_iaa_gene),
+    sprintf("(%.1f%%)", sum(df$has_any_iaa_gene)/total*100),
+    "| Manuscript: 60.5%\n")
+cat("  iaaM  (K00466):", sum(df$K00466 == 1, na.rm = TRUE), "\n")
+cat("  iaaH  (K21801):", sum(df$K21801 == 1, na.rm = TRUE), "\n")
+cat("  ipdC  (K04103):", sum(df$K04103 == 1, na.rm = TRUE), "\n")
+cat("  tryB  (K00832):", sum(df$K00832 == 1, na.rm = TRUE), "\n")
+```
+
+## IAA assay vs genes
+```{r iaa_assay}
+cat("IAA_production positive:", sum(df$IAA_production == 1, na.rm = TRUE), "\n\n")
+
+iaa_pos <- df %>% filter(IAA_production == 1)
+
+cat("Among IAA+ isolates:\n")
+cat("  with any IAA gene:", sum(has_any_gene(iaa_pos, iaa_genes)), "\n")
+cat("  without any IAA gene:", sum(!has_any_gene(iaa_pos, iaa_genes)), "\n")
+cat("  with K00832 (tryB):", sum(iaa_pos$K00832 == 1, na.rm = TRUE), "\n")
+
+iaa_pos_detail <- iaa_pos %>%
+  select(GTDB_hit_iso_number, IAA_production, K00466, K21801, K04103, K00832)
+print(iaa_pos_detail)
+```
+
+## IAA positive but lacking genes
+```{r iaa_no_genes}
+iaa_pos_no_genes <- df %>%
+  filter(IAA_production == 1 & !has_any_iaa_gene) %>%
+  select(isolate_number, GTDB_hit_iso_number, K00466, K21801, K04103, K00832)
+cat("IAA+ but lacking all screened IAA genes:\n")
+print(iaa_pos_no_genes)
+```
+
+## IAA negative but with genes
+```{r iaa_neg_with_genes}
+iaa_neg_with_genes <- df %>%
+  filter(IAA_production == 0 & has_any_iaa_gene) %>%
+  select(isolate_number, GTDB_hit_iso_number, K00466, K21801, K04103, K00832)
+cat("IAA- but with IAA genes:\n")
+print(iaa_neg_with_genes)
+```
+
+---------------
+# Other PGP genes
+---------------
+
+```{r other_pgp}
+cat("=== OTHER PGP GENES (all isolates) ===\n")
+cat("arsR (K03892) arsenic degradation:", sum(df_assay_genome$K03892 == 1, na.rm = TRUE), "\n")
+cat("ribBA (K14652) folate biosynthesis:", sum(df_assay_genome$K14652 == 1, na.rm = TRUE), "\n")
+cat("corA (K03284) cobalt transporter:", sum(df_assay_genome$K03284 == 1, na.rm = TRUE), "\n")
+```
+
+## Gibberellin and terpenoid precursors
+```{r gibberellin}
+cat("idsA (K13787) geranylgeranyl diphosphate synthase type I:",
+    sum(df_assay_genome$K13787 == 1, na.rm = TRUE), "\n")
+cat("ferredoxin (K05337) gibberellin biosynthesis:",
+    sum(df_assay_genome$K05337 == 1, na.rm = TRUE), "\n")
+cat("GGPS (K13789) geranylgeranyl diphosphate synthase:",
+    sum(df_assay_genome$K13789 == 1, na.rm = TRUE), "\n")
+```
+
+## Glyoxylate metabolism
+```{r glyoxylate}
+cat("=== GLYOXYLATE ===\n")
+cat("ghrA (K12972) glyoxylate/hydroxypyruvate reductase:",
+    sum(df_assay_genome$K12972 == 1, na.rm = TRUE), "\n")
+cat("mch/mcd (K14449) 2-methylfumaryl-CoA hydratase:",
+    sum(df_assay_genome$K14449 == 1, na.rm = TRUE), "\n")
+cat("aceA (K01637) isocitrate lyase:",
+    sum(df_assay_genome$K01637 == 1, na.rm = TRUE), "\n")
+cat("glcB (K01638) malate synthase:",
+    sum(df_assay_genome$K01638 == 1, na.rm = TRUE), "\n")
+```
+
+---------------
+# Secretion Systems
+---------------
+
+```{r secretion_setup}
+secretion_systems <- list(
+  "Sec-SRP pathway" = c("K03072", "K03073", "K03074", "K03075", "K03076", "K03210", "K03217"),
+  "Twin Arginine Targeting (Tat)" = c("K03116", "K03117", "K03118", "K03425"),
+  "Type I Secretion System" = c("K12340", "K11003", "K11004"),
+  "Type II Secretion System" = c("K02453", "K02465", "K02455", "K02457", "K02458", "K02459", "K02460", "K02461", "K02462"),
+  "Type III Secretion System" = c("K03221", "K04056", "K04057", "K04059", "K03227", "K03228", "K03229", "K03230"),
+  "Type IV Secretion System" = c("K03194", "K03197", "K03198", "K03200", "K03202", "K03204"),
+  "Type V Secretion System (Autotransporter)" = c("K11028", "K12341", "K12342"),
+  "Type VI Secretion System" = c("K11891", "K11892", "K11904", "K11903", "K11906", "K11907", "K11912")
+)
+
+# Need to re-filter df to include secretion KOs
+secretion_kos <- unlist(secretion_systems, use.names = FALSE)
+sec_cols_to_keep <- intersect(c(meta_cols, all_kegg_ids, secretion_kos), names(df_assay_genome))
+df_sec <- df_assay_genome[!is.na(df_assay_genome$isolate_number), sec_cols_to_keep]
+
+for (sys_name in names(secretion_systems)) {
+  kos <- secretion_systems[[sys_name]]
+  present_kos <- intersect(kos, names(df_sec))
+  col_name <- paste0("has_any_", gsub("[() ]", "_", tolower(sys_name)))
+  df_sec[[col_name]] <- has_any_gene(df_sec, present_kos)
+}
+```
+
+```{r secretion_counts}
+cat("=== SECRETION SYSTEM COUNTS ===\n")
+for (sys_name in names(secretion_systems)) {
+  col_name <- paste0("has_any_", gsub("[() ]", "_", tolower(sys_name)))
+  if (col_name %in% names(df_sec)) {
+    cat(sys_name, ":", sum(df_sec[[col_name]], na.rm = TRUE), "\n")
+  }
+}
+```
+
+```{r secretion_detail}
+for (sys_name in names(secretion_systems)) {
+  col_name <- paste0("has_any_", gsub("[() ]", "_", tolower(sys_name)))
+  if (col_name %in% names(df_sec)) {
+    pos <- df_sec %>% filter(.data[[col_name]])
+    if (nrow(pos) > 0) {
+      gene_cols <- intersect(secretion_systems[[sys_name]], names(df_sec))
+      cat("\n===", toupper(sys_name), "- positive isolates:", nrow(pos), "===\n")
+      output <- pos %>% select(isolate_number, GTDB_hit_iso_number, all_of(gene_cols))
+      print(output)
+    }
+  }
+}
+```

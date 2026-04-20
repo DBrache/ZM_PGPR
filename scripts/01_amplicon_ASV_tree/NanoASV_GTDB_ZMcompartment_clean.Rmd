@@ -1,0 +1,945 @@
+---
+title: "16S rRNA Amplicon Community Analysis — *Z. marina* Compartments"
+author: "Diane Brache"
+date: "2025-08-29"
+output: html_document
+---
+
+# Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+library(phyloseq)
+library(decontam)
+library(microViz)
+library(ape)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(forcats)
+library(readr)
+library(ggplot2)
+library(microshades)
+library(cowplot)
+library(scales)
+library(vegan)
+```
+
+# 1. Load NanoASV Phyloseq Object
+
+NanoASV was run on nanopore full-length 16S rRNA reads classified against
+GTDB r226 (reformatted to NanoASV-compatible single-line FASTA headers).
+
+```{r load-data}
+load("./data/NanoASV.rdata")
+NanoASV
+```
+
+# 2. Decontaminate Using Negative Controls
+
+Prevalence-based decontamination using the blank sample (compartment == "cont").
+
+```{r decontam}
+sampledf <- data.frame(sample_data(NanoASV))
+
+contam_results <- isContaminant(
+  NanoASV,
+  method = "prevalence",
+  neg = sampledf$compartment == "cont"
+)
+
+table(contam_results$contaminant)
+
+NanoASV_clean <- prune_taxa(!contam_results$contaminant, NanoASV)
+NanoASV_clean
+```
+
+# 3. Clean Taxonomy
+
+## 3a. Remove unclassifiable clusters
+
+Three unknown clusters with aberrant phylogenetic placement are removed.
+
+```{r remove-unknown-clusters}
+asvs_to_remove <- c(
+  "21af9906-13a0-478e-9f1f-22a6aaa2a2b5_Unknown_cluster_11",
+  "21af9906-13a0-478e-9f1f-22a6aaa2a2b5_Unknown_cluster_12",
+  "21af9906-13a0-478e-9f1f-22a6aaa2a2b5_Unknown_cluster_16"
+)
+
+NanoASV_c2 <- prune_taxa(
+  setdiff(taxa_names(NanoASV_clean), asvs_to_remove),
+  NanoASV_clean
+)
+```
+
+## 3b. Fix known misannotations
+
+```{r fix-jaklem01}
+tax_table(NanoASV_c2)["JAKLEM01", "Phylum"] <- "Cyanobacteriota"
+```
+
+## 3c. Compute classification rate BEFORE cleaning placeholder names
+
+GTDB assigns placeholder codes (e.g., "DAOTXL01", "UBA4207") to uncultured
+clades. We count the proportion of ASVs with a standard genus-level name
+before replacing these placeholders for visualization.
+
+```{r classification-rate-pre-clean}
+tax_mat_preclean <- as.data.frame(tax_table(NanoASV_c2))
+
+# Pattern catches all-uppercase alphanumeric codes typical of GTDB placeholders
+placeholder_pattern <- "^[A-Z0-9][A-Z0-9\\-_]+[0-9]$"
+
+n_true_genus_preclean <- sum(
+  !is.na(tax_mat_preclean$Genus) &
+  !grepl(placeholder_pattern, tax_mat_preclean$Genus)
+)
+total_ASVs_preclean <- nrow(tax_mat_preclean)
+pct_genus_classified <- round(100 * n_true_genus_preclean / total_ASVs_preclean, 1)
+
+cat(sprintf(
+  "ASVs classified to a standard genus: %d / %d (%.1f%%)\n",
+  n_true_genus_preclean, total_ASVs_preclean, pct_genus_classified
+))
+```
+
+## 3d. Replace GTDB placeholder names with informative labels
+
+Placeholder names (genome accessions, UBA codes, etc.) are replaced using
+microViz `tax_fix()`. Short genus names that are real taxa are preserved
+afterward.
+
+```{r build-unknown-list}
+test_1 <- c(
+  "JALSRG01", "UBA8317", "CGMCC-115725", "ATCC43930", "DSM-2933", "DSM-1321",
+  "DSM-2461", "DSM-6294", "DSM-1736", "DSM-5130", "DSM-4660", "DSM-27016",
+  "DSM-24629", "DSM-18226", "DSM-19205", "DSM-21967", "DSM-17781", "DSM-16500",
+  "DSM-26407", "DSM-19610", "UBA6615", "BMS3Bbin11", "GCA-001735895",
+  "JANNEA01", "SZUA-36", "Ga0077536", "JAUZRS01", "UBA3077", "UBA7378",
+  "UBA2767", "UBA2230", "UBA1014", "UBA4207", "UBA7441", "UBA4729", "UBA7522",
+  "UBA1450", "UBA5124", "UBA6263", "UBA1258", "UBA2658", "UBA5774", "UBA1351",
+  "UBA6244", "UBA4466", "UBA5072", "UBA4465", "UBA2365", "UBA2029", "UBA5796",
+  "UBA6107", "UBA3125", "UBA9410", "UBA6100", "UBA2589", "UBA2982", "UBA5078",
+  "UBA4421", "UBA4479", "UBA1672", "UBA5868", "UBA8337", "UBA9148", "UBA4722",
+  "UBA1844", "UBA1847", "UBA1858", "UBA7359", "UBA4457", "UBA9145", "UBA6265",
+  "UBA1664", "UBA2385", "UBA5852", "UBA2174", "UBA2245", "UBA6930", "UBA2197",
+  "UBA1532", "UBA7805", "UBA8438", "UBA5704", "UBA4665", "UBA7683", "UBA6164",
+  "UBA9971", "UBA9579", "UMGS416", "UBA2779", "UBA5550", "UBA1556", "UBA5342",
+  "UBA1715", "UBA9320", "UBA8639", "UBA8649", "UBA2268", "UBA3940", "UBA4823",
+  "UBA4811", "UBA2103", "UBA5976", "UBA1924", "UBA8139", "UBA8592", "UBA6960",
+  "UBA7434", "UBA2774", "UBA2466", "UBA7976", "UBA2386", "UBA1845", "UBA1560",
+  "UBA2565", "UBA8416", "UBA2199", "UBA9615", "UBA1875", "UBA1558", "UBA1400",
+  "UBA1406", "UBA4473", "UBA1369", "UBA9216", "UBA8231", "UBA5070", "UBA6184",
+  "UBA1062", "UBA2979", "UBA2200", "UBA1149", "UBA9973", "UBA5794", "UBA3495",
+  "UBA6002", "UBA1113", "UBA6429", "UBA5335", "UBA9214", "UBA4575", "UBA1177",
+  "UBA1144", "UBA9160", "UBA2361", "UBA1135", "UBA8108", "UBA6911", "UBA6191",
+  "UBA4802", "UBA2968", "UBA8477", "UBA1384", "UBA8248", "UBA4055", "UBA10518",
+  "UBA11883", "UBA11386", "UBA10364", "UBA10425", "UBA12574", "UBA12480",
+  "UBA12087", "UBA11865", "UBA10649", "UBA11650", "UBA11869", "UBA10349",
+  "UBA12247", "UBA12508", "UBA10450", "UBA12075", "UBA10185", "UBA12170",
+  "UBA10428", "UBA12481", "UBA12077", "UBA10348", "UBA11574", "UBA11579",
+  "UBA11858", "UBA10799", "UBA11373", "UBA10347", "UBA10025", "UBA11236",
+  "UBA10199", "UBA2174_A", "UBA101185", "SZUA-55", "SZUA-37", "SURF-52",
+  "S139-18", "SURF-12", "S5-A14a", "SHAN690", "S143-42", "S016-13", "S145-25",
+  "S015-18", "S010-25", "SZUA-76", "SURF-16", "SZUA-47", "SZUA-35", "SM23-33",
+  "S36-B12", "Shimia_E", "SZUA-547", "SZUA-100", "SpSt-501", "S7086C20",
+  "SZUA-421", "SZUA-378", "SM3-B121", "SZUA-442", "SZUA-217", "SZUA-451",
+  "SZUA-186", "SZUA-601", "SZUA-540", "SZUA-115", "SZUA-584", "CALZJG01",
+  "Ga007554", "Ga0077554", "SZUA-140", "GCA-013348725", "SZUA-150",
+  "HTCC5015", "GCA-2729495", "CABXJW01"
+)
+
+test_2 <- c(
+  "JACDCP01", "JAABTG01", "JAJDZL01", "JAWHTC01", "JAIUZI01", "JAWQFO01",
+  "JAHTBL01", "JABDJX01", "JAAKGP01", "JAWKWW01", "JAJXWB01", "JAEUMD01",
+  "JAALLB01", "JAWKWH01", "JAHEGN01", "JABDAD01", "JANRMG01", "JAHJKV01",
+  "JACKEV01", "JADKFE01", "JACKEQ01", "JAGHCC01", "JADGBM01", "JABDQA01",
+  "JAWSUF01", "JAHEDT01", "JARRKU01", "JABZFP01", "JAUCGE01", "JAUCGG01",
+  "JAUCGI01", "JAAXQD01", "JADFWK01", "JAUVVL01", "JAFDFO01", "JAILZL01",
+  "JAYEIR01", "JAFGMQ01", "JAXHUM01", "JAUWMR01", "JAIPDZ01", "JAAZBV01",
+  "JAFDGZ01", "JAJRXD01", "JAOAHH01", "JAHEEI01", "JBAJNL01", "JACPWY01",
+  "JAJZQH01", "JAFGMW01", "JACZVU01", "JABSQW01", "JAKVBI01", "JAHRAN01",
+  "JADJJE01", "JANQQS01", "JAOUOP01", "JAVEWA01", "JAUVAN01", "JALNZK01",
+  "JASJCT01", "JAAERE01", "JAUIBR01", "JACKDJ01", "JAWKQB01", "JAQYVZ01",
+  "JAFDBW01", "JAFGRU01", "JAKQSH01", "JACKDL01", "JACKDN01", "JACKDP01",
+  "JAOUPZ01", "JACZRV01", "JAUIIO01", "JAAEST01", "JABIHA01", "JAEUWD01",
+  "JACKAJ01", "JACKAK01", "JADHTQ01", "JAUHVL01", "JABGVH01", "JAAUSQ01",
+  "JADJWQ01", "JAJRPF01", "JAZGFI01", "JANQLS01", "JACKGW01", "JACKGY01",
+  "JAPKHB01", "JAHEIK01", "JANQJW01", "JADFNO01", "JAAELQ01", "JADFPW01",
+  "JAUCQB01", "JAFGRR01", "JAIPFM01", "JABMPE01", "JAQBVJ01", "JABAAE01",
+  "JADHUC01", "JAGQPD01", "JAJRVM01", "JAVJSD01", "JAGFJK01", "JAWKTM01",
+  "JABWBD01", "JAHBXR01", "JAIBBZ01", "JALHMI01", "JAEWUR01", "JAHIKV01",
+  "JANXQG01", "JAAYAY01", "JAAYCB01", "JACKPL01", "JAHFHB01", "JAUYMS01",
+  "JAHFHD01",
+  "JAJDCD01", "JAMXCX01", "JAQUWY01", "JAJDOJ01", "G030406045", "CAMYNG01",
+  "GCF-013343005", "SZUA-152", "JAURND01", "JAJRRL01", "JAUIET01", "SZUA-229",
+  "JAWKJK01", "FW305-bin1", "JAVEEB01", "JAGXFP01", "ZC4RG35", "JAVJTC01",
+  "MedAcidi-G1", "MedAcidi-G2B", "JAEUHH01", "JAGOSC01", "JAEWYI01",
+  "JAEWLZ01", "JAEWVL01", "JAEINW01", "JAEYUG01", "JAEZLB01", "JAEUHO01",
+  "JAEUIK01", "JAEINX01", "JAEUJM01", "JAENZW01", "JAEDAM01", "JAHOYW01",
+  "JAHECW01", "JAHIPL01", "JAHJTW01", "JAHDHI01", "JAHDHU01", "JAHDFB01",
+  "JAHBNG01", "JAHBVH01", "JAHEEL01", "JAHEDH01", "JAHJML01", "JAHJIQ01",
+  "JAHCJI01", "JAHECQ01", "JAHELU01", "JAHDBV01", "JAHDCC01", "JAHFRQ01",
+  "JAHEDB01", "JAHEFE01", "JAHXHF01", "JAHRAW01", "JAHEIW01", "JAHDSC01",
+  "JAHEKO01", "JAHZIX01", "JAHIUU01", "JAHIVO01", "JAHQVL01", "JAHEJN01",
+  "JAHIPI01", "JAHIZJ01", "JAHEKZ01", "JAJRUS01", "JAJCXR01", "JAJCXN01",
+  "JAJCZD01", "JAJYDS01", "JAJVIP01", "JAJDCE01", "JAJRYZ01", "JAJRQE01",
+  "JAJRXZ01", "JAPXNP01", "JAJZPX01", "PALSA-610", "PALSA-1178", "PALSA-1355",
+  "Palsa-1178", "Palsa-1032", "IMCC2047", "IMCC34051", "IMCC26256",
+  "JAJRTA01", "JAJVHW01", "JAJRXG01", "JAJRVO01", "JAJRWY01", "JAJUJL01",
+  "JAJRTP01", "JAJYNJ01", "JAJRXC01", "JAJCZZ01", "JAJFKB01", "JAJRRA01",
+  "JAJFHR01", "JAJRWW01", "JAJRXT01", "JAJRVZ01", "JAJSAM01", "JABMRN01",
+  "RBG-13-46-9", "JAAYZQ01", "E44-bin32", "E26-bin7", "E44-bin15",
+  "BMS3Abin13", "CR02bin9", "JABWBV01", "JAADGX01", "DAOTYC01", "CAITLU01",
+  "JACIWP01", "CG2-30-64-16", "4572-78", "JAFGEY01", "JABMPR01", "JABWCI01",
+  "JABXKX01", "JABGQS01", "JABMQB01", "JACKQE01", "JABHCC01", "JABSQK01",
+  "RBG-13-44-9", "RBG-13-68-16", "RBG-16-49-21", "RBG-16-66-30",
+  "RBG-16-71-46", "SZUA-368", "SZUA-534", "SZUA-191", "SZUA-252", "SZUA-567",
+  "SZUA-365", "SZUA-182", "SZUA-1497", "JABDMH01", "JABDKH01", "CAIYCZ01",
+  "NS11-12g", "JAADGE01", "ML635J-15", "VadinHA17", "JAAYUG01", "GWF2-33-38",
+  "GCA-2748055", "JAFGXI01", "GCA-002722245", "JAGONC01", "JADFUO01"
+)
+
+test_3 <- c(
+  "JADFUQ01", "JAGRPD01", "JAGNHN01", "JAADJA01", "JAIORY01", "FEN-979",
+  "Fen-1342", "GCA-002791395", "4484-211", "GWF2-35-18", "UM-FILTER-43-11",
+  "JAUYGZ01", "LOWO2-01-FULL-3", "CAJFVJ01", "CALMFG01", "HB172195",
+  "CADAEX01", "JBFMGN01", "4484-276", "4484-171", "GWE2-31-10", "JAFGJZ01",
+  "JADFWA01", "JAIOQZ01", "LZORAL124-64-63", "MSB-5A5", "JADFYW01",
+  "JADKCL01", "GCA-2711565", "DATDCY01", "G963555815", "JACPRG01", "JADFOP01",
+  "DATKYB01", "JAUVQV01", "JAAYUB01", "JADFOI01", "DASUFT01", "JAIQFR01",
+  "DASXTC01", "JACPZX01", "Gp22-AA2", "JAIOJS01", "Gp7-AA8", "JAUWHS01",
+  "JACPOV01", "JABCYS01", "JACPRK01", "G963678445", "JAKPRU01", "GWF2-35-9",
+  "GWF2-39-127", "JACDBH01", "2-12-FULL-41-12", "GWA2-36-10",
+  "2-01-FULL-52-15", "GCA-2747515", "CAIXNZ01", "DATDWN01", "GWA2-41-24",
+  "GWC2-37-13", "GCA-002793355", "CAIRTM01", "JAAZCA01", "2-02-FULL-50-16",
+  "JBDIVX01", "JAFGBW01", "JAAYKL01", "JAAYDE01", "JACRMM01", "NAC60-12",
+  "JAPUJL01", "JACQKK01", "CALJRW01", "G030584005", "JBGSMV01", "JAGFJO01",
+  "GCA-002686595", "DAOVDS01", "JACQVS01", "GCA-002687715", "JAKLKS01",
+  "JACPPG01", "JAICIG01", "JADFKK01", "GWF2-50-93", "JAADHT01",
+  "YB12-FULL-65-16", "JAFGAQ01", "JAIRLG01", "CAJWTS01", "JBAYZB01",
+  "GCA-2401785", "DATKUA01", "HXMU1428-3", "JAAXGF01", "JAGOMX01",
+  "JAFGLY01", "CAJQPC01", "GCA-2862545", "JAFDDL01", "JAUCGF01", "JAFDCJ01",
+  "ETH-SRB1", "JAUWMJ01", "B25-G16", "JALSRD01", "CAJINA01", "4572-123",
+  "JABHNK01", "C00003060", "G963662305", "JACKAF01", "2-02-FULL-44-16",
+  "JAFGIB01"
+)
+
+unknown_list <- c(test_1, test_2, test_3)
+```
+
+```{r tax-fix}
+Nano_c3 <- NanoASV_c2 %>%
+  tax_fix(
+    min_length = 7,
+    unknowns = unknown_list,
+    sep = " ",
+    anon_unique = TRUE,
+    suffix_rank = "classified"
+  )
+```
+
+## 3e. Restore whitelisted short genus names
+
+microViz `tax_fix()` replaces names shorter than 7 characters. These real
+genus names are restored from the original taxonomy.
+
+```{r restore-genera}
+keep_genus <- c("Nisaea", "Shimia", "Yoonia", "Haliea", "Vibrio", "Olleya", "Babela")
+tax <- as.data.frame(tax_table(Nano_c3))
+original_tax <- as.data.frame(tax_table(NanoASV_c2))
+
+for (g in keep_genus) {
+  rows <- which(original_tax$Genus == g)
+  tax$Genus[rows] <- g
+}
+tax_table(Nano_c3) <- as.matrix(tax)
+```
+
+## 3f. Remove GTDB sub-clade suffixes for visualization
+
+GTDB appends suffixes (e.g., `_A`, `_B`) to distinguish polyphyletic clades.
+These are collapsed here for cleaner visualization. Note: this merges
+taxonomically distinct GTDB clades that share a base name.
+
+```{r clean-suffixes}
+tax_orig <- as.data.frame(tax_table(Nano_c3))
+
+clean_name <- function(x) {
+  ifelse(is.na(x), NA, sub("_(?:[A-Z]+)(?=\\b|\\s)", "", x, perl = TRUE))
+}
+
+tax_clean <- tax_orig
+tax_clean[] <- lapply(tax_clean, clean_name)
+
+Nano_clean <- Nano_c3
+tax_table(Nano_clean) <- as.matrix(tax_clean)
+```
+
+# 4. Filter Low-Abundance ASVs
+
+Remove ASVs with total abundance < 2 across all samples (likely sequencing artifacts).
+
+```{r filter-singletons}
+asv_total_counts <- taxa_sums(Nano_clean)
+taxa_to_keep <- asv_total_counts >= 2
+Nano_filtered <- prune_taxa(taxa_to_keep, Nano_clean)
+Nano_filtered
+```
+
+## 4b. Export filtered ASV names for tree reconstruction
+
+Write the filtered ASV IDs to a text file. Use this on the HPC to subset
+`ALL_ASV.fasta` before re-running MAFFT, IQ-TREE, and App-SpaM.
+
+```{r export-filtered-asvs}
+filtered_asv_ids <- taxa_names(Nano_filtered)
+
+outdir <- "./fig1_out"
+dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+
+writeLines(filtered_asv_ids, file.path(outdir, "filtered_ASV_ids.txt"))
+
+cat(sprintf("Exported %d filtered ASV IDs to filtered_ASV_ids.txt\n", length(filtered_asv_ids)))
+```
+
+On the HPC, subset the original FASTA with seqtk or awk before re-aligning:
+
+```
+# Option 1: seqtk
+seqtk subseq ALL_ASV.fasta filtered_ASV_ids.txt > ALL_ASV_filtered.fasta
+
+# Option 2: if seqtk is not available, use a simple awk approach
+awk 'BEGIN{while((getline line < "filtered_ASV_ids.txt") > 0) ids[line]=1}
+     /^>/{p=(substr($1,2) in ids)} p' ALL_ASV.fasta > ALL_ASV_filtered.fasta
+```
+
+Then re-run the alignment and tree:
+
+```
+mafft --thread 28 --adjustdirectionaccurately ALL_ASV_filtered.fasta > ALL_ASV_filtered_aligned.fasta
+iqtree -s ALL_ASV_filtered_aligned.fasta -m GTR+G -bb 5000 --threads 28
+appspam -s ALL_ASV_filtered_aligned.fasta -q combined_16S_unaligned.fasta -t ALL_ASV_filtered_aligned.fasta.treefile --threads 28
+```
+
+# 5. Summary Statistics and Manuscript Numbers
+
+## 5a. Overall ASV counts
+
+```{r asv-counts}
+total_ASVs <- ntaxa(Nano_filtered)
+
+# Per-compartment ASV counts (ASVs with count > 0 in at least one sample)
+otu_mat <- as.data.frame(otu_table(Nano_filtered))
+otu_mat$ASV <- rownames(otu_mat)
+tax_mat <- as.data.frame(tax_table(Nano_filtered))
+tax_mat$ASV <- rownames(tax_mat)
+
+sample_df <- as(sample_data(Nano_filtered), "data.frame") %>%
+  rownames_to_column(var = "barcode")
+
+otu_long <- otu_mat %>%
+  pivot_longer(cols = -ASV, names_to = "sample_id", values_to = "count")
+
+combined_df <- otu_long %>%
+  left_join(tax_mat, by = "ASV") %>%
+  left_join(sample_df, by = c("sample_id" = "barcode"))
+
+desired_compartments <- c("Rhiz", "endo", "plan")
+
+filtered_df <- combined_df %>%
+  filter(count > 0, compartment %in% desired_compartments)
+
+asvs_per_compartment <- filtered_df %>%
+  group_by(compartment) %>%
+  summarise(n_asvs = n_distinct(ASV), .groups = "drop")
+
+n_asvs_rhiz <- asvs_per_compartment$n_asvs[asvs_per_compartment$compartment == "Rhiz"]
+n_asvs_plan <- asvs_per_compartment$n_asvs[asvs_per_compartment$compartment == "plan"]
+n_asvs_endo <- asvs_per_compartment$n_asvs[asvs_per_compartment$compartment == "endo"]
+
+cat(sprintf("Total ASVs: %d\n", total_ASVs))
+cat(sprintf("Rhizosphere: %d | Rhizoplane: %d | Endosphere: %d\n",
+            n_asvs_rhiz, n_asvs_plan, n_asvs_endo))
+```
+
+## 5b. Unique taxa counts per rank
+
+```{r unique-taxa-counts}
+tax_f <- as.data.frame(tax_table(Nano_filtered))
+
+n_genera   <- length(unique(na.omit(tax_f$Genus)))
+n_families <- length(unique(na.omit(tax_f$Family)))
+n_orders   <- length(unique(na.omit(tax_f$Order)))
+n_classes  <- length(unique(na.omit(tax_f$Class)))
+n_phyla    <- length(unique(na.omit(tax_f$Phylum)))
+
+cat(sprintf("Phyla: %d | Classes: %d | Orders: %d | Families: %d | Genera: %d\n",
+            n_phyla, n_classes, n_orders, n_families, n_genera))
+```
+
+## 5c. Unique taxa per compartment
+
+```{r taxa-by-compartment}
+unique_taxa_by_compartment <- filtered_df %>%
+  group_by(compartment) %>%
+  summarise(
+    unique_genera   = n_distinct(Genus[!is.na(Genus)]),
+    unique_families = n_distinct(Family[!is.na(Family)]),
+    unique_orders   = n_distinct(Order[!is.na(Order)]),
+    unique_classes  = n_distinct(Class[!is.na(Class)]),
+    unique_phyla    = n_distinct(Phylum[!is.na(Phylum)]),
+    .groups = "drop"
+  )
+
+print(unique_taxa_by_compartment)
+```
+
+## 5d. Relative abundance by class (for manuscript text)
+
+```{r class-relative-abundance}
+class_counts <- tapply(taxa_sums(Nano_filtered), tax_table(Nano_filtered)[, "Class"], sum)
+class_rel_abund <- sort(100 * class_counts / sum(class_counts), decreasing = TRUE)
+class_abund_df <- data.frame(
+  Class = names(class_rel_abund),
+  Percent = round(as.numeric(class_rel_abund), 2)
+)
+print(class_abund_df)
+
+# Store top class percentages for inline use
+pct_gamma   <- class_abund_df$Percent[class_abund_df$Class == "Gammaproteobacteria"]
+pct_alpha   <- class_abund_df$Percent[class_abund_df$Class == "Alphaproteobacteria"]
+pct_bacter  <- class_abund_df$Percent[class_abund_df$Class == "Bacteroidia"]
+pct_dsulfo  <- class_abund_df$Percent[class_abund_df$Class == "Desulfobulbia"]
+pct_actino  <- class_abund_df$Percent[class_abund_df$Class == "Actinomycetes"]
+pct_bacilli <- class_abund_df$Percent[class_abund_df$Class == "Bacilli"]
+```
+
+## 5e. Relative abundance by phylum
+
+```{r phylum-relative-abundance}
+phylum_counts <- tapply(taxa_sums(Nano_filtered), tax_table(Nano_filtered)[, "Phylum"], sum)
+phylum_rel_abund <- sort(100 * phylum_counts / sum(phylum_counts), decreasing = TRUE)
+phylum_abund_df <- data.frame(
+  Phylum = names(phylum_rel_abund),
+  Percent = round(as.numeric(phylum_rel_abund), 2)
+)
+print(phylum_abund_df)
+```
+
+## 5f. Top families by relative abundance in amplicon data
+
+```{r top-amplicon-families}
+# Relative abundance per sample (already computed NanoASV_rel above, but
+# we need a fresh melt that hasn't been grouped into "Other")
+NanoASV_rel_fam <- transform_sample_counts(Nano_filtered, function(x) x / sum(x))
+NanoASV_melt_fam <- psmelt(NanoASV_rel_fam)
+
+# Remove control
+NanoASV_melt_fam <- NanoASV_melt_fam %>%
+  filter(compartment != "cont" & Sample != "barcode10")
+
+# Top 10 families by overall relative abundance
+top_n_fam <- 10
+top_amplicon_fam <- NanoASV_melt_fam %>%
+  group_by(Family) %>%
+  summarise(TotalAbundance = sum(Abundance), .groups = "drop") %>%
+  arrange(desc(TotalAbundance)) %>%
+  slice_head(n = top_n_fam)
+
+# Percent of total abundance occupied by top 10 families
+total_all_fam <- sum(NanoASV_melt_fam$Abundance)
+pct_top10_fam <- round(100 * sum(top_amplicon_fam$TotalAbundance) / total_all_fam, 2)
+
+print(top_amplicon_fam)
+cat(sprintf("Top %d families occupy %.2f%% of total abundance\n", top_n_fam, pct_top10_fam))
+
+# Store top family name for inline use
+amp_top_family <- top_amplicon_fam$Family[1]
+
+# Average relative abundance per compartment for top families
+avg_fam_by_compartment <- NanoASV_melt_fam %>%
+  filter(Family %in% top_amplicon_fam$Family) %>%
+  group_by(compartment, Sample, Family) %>%
+  summarise(SampleAbund = sum(Abundance), .groups = "drop") %>%
+  group_by(compartment, Family) %>%
+  summarise(AvgRelAbund = mean(SampleAbund), .groups = "drop") %>%
+  group_by(compartment) %>%
+  mutate(Percent = round(100 * AvgRelAbund / sum(AvgRelAbund), 2)) %>%
+  ungroup()
+
+print(avg_fam_by_compartment)
+```
+
+## 5g. Manuscript inline code reference
+
+Use these inline R expressions in your manuscript Rmd:
+
+**Amplicon community:**
+
+- Total ASVs: `` `r total_ASVs` ``
+- Rhizosphere ASVs: `` `r n_asvs_rhiz` ``
+- Rhizoplane ASVs: `` `r n_asvs_plan` ``
+- Endosphere ASVs: `` `r n_asvs_endo` ``
+- % classified to genus: `` `r pct_genus_classified` ``
+- Gammaproteobacteria %: `` `r pct_gamma` ``
+- Alphaproteobacteria %: `` `r pct_alpha` ``
+- Bacteroidia %: `` `r pct_bacter` ``
+- Desulfobulbia %: `` `r pct_dsulfo` ``
+- Actinomycetes %: `` `r pct_actino` ``
+- Bacilli %: `` `r pct_bacilli` ``
+- Top amplicon family: `` `r amp_top_family` ``
+- Top 10 families % of total: `` `r pct_top10_fam` ``
+
+# 6. Color Palettes
+
+```{r color-palettes}
+phylum_colors <- c(
+  "Pseudomonadota"    = "#6C5948FF",
+  "Desulfobacterota"  = "#D4B483FF",
+  "Bacteroidota"      = "#C2D89AFF",
+  "Other"             = "#D8D8D8FF",
+  "Bacillota"         = "#477B95FF",
+  "Campylobacterota"  = "#8EA3BDFF",
+  "Actinomycetota"    = "#5FA2A4FF",
+  "Planctomycetota"   = "#315B88FF",
+  "Verrucomicrobiota" = "#694B5AFF",
+  "Chloroflexota"     = "#191F40FF",
+  "Acidobacteriota"   = "#B86830FF"
+)
+
+class_colors <- c(
+  "Gammaproteobacteria" = "#a7c0a8",
+  "Alphaproteobacteria" = "#c0728b",
+  "Desulfobulbia"       = "#ae6537",
+  "Bacteroidia"         = "#C2D89A",
+  "Other"               = "#D8D8D8",
+  "Campylobacteria"     = "#b68d47",
+  "Desulfobacteria"     = "#dfc094",
+  "Acidimicrobiia"      = "#9fb7a0",
+  "Actinomycetes"       = "#7e798e",
+  "Bacilli"             = "#839daf",
+  "Clostridia"          = "#9588a0",
+  "Anaerolineae"        = "#191F40",
+  "Planctomycetia"      = "#2f6c5a"
+)
+
+# Compartment display labels
+compartment_labels <- c(
+  "Rhiz" = "Rhizosphere",
+  "plan" = "Rhizoplane",
+  "endo" = "Endosphere"
+)
+```
+
+# 7. Amplicon Community Barplot (Class-level)
+
+```{r class-barplot, fig.width=10, fig.height=6}
+NanoASV_rel2 <- transform_sample_counts(Nano_filtered, function(x) x / sum(x))
+NanoASV_melt_class <- psmelt(NanoASV_rel2)
+
+top_11_classes <- NanoASV_melt_class %>%
+  group_by(Class) %>%
+  summarise(TotalAbundance = sum(Abundance), .groups = "drop") %>%
+  arrange(desc(TotalAbundance)) %>%
+  slice_head(n = 11) %>%
+  pull(Class)
+
+NanoASV_melt_class$Class <- ifelse(
+  NanoASV_melt_class$Class %in% top_11_classes,
+  NanoASV_melt_class$Class, "Other"
+)
+NanoASV_melt_class$Class <- factor(
+  NanoASV_melt_class$Class,
+  levels = c(top_11_classes, "Other")
+)
+
+Nano_no_c_class <- NanoASV_melt_class %>%
+  filter(compartment != "cont" & Sample != "barcode10")
+
+sample_order_c <- Nano_no_c_class %>%
+  group_by(Sample) %>%
+  summarise(TotalAbundance = sum(Abundance), .groups = "drop") %>%
+  arrange(desc(TotalAbundance)) %>%
+  pull(Sample)
+Nano_no_c_class$Sample <- factor(Nano_no_c_class$Sample, levels = sample_order_c)
+Nano_no_c_class$compartment <- factor(
+  Nano_no_c_class$compartment,
+  levels = c("Rhiz", "plan", "endo")
+)
+
+ggplot(Nano_no_c_class, aes(x = Sample, y = Abundance, fill = Class)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ compartment, scales = "free_x",
+             labeller = labeller(compartment = compartment_labels)) +
+  theme_bw(base_size = 14) +
+  labs(y = "Relative Abundance", x = "Sample") +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1, size = 8),
+    strip.text = element_text(face = "bold")
+  ) +
+  scale_fill_manual(values = class_colors)
+```
+
+# 8. Isolate Analysis
+
+## 8a. Load isolate data
+
+```{r load-isolates}
+cPCR_init <- read_csv(
+  "./data/cPCR_init_clean_taxa_2026_02_27.csv",
+  show_col_types = FALSE
+)
+```
+
+## 8b. Isolate summary counts
+
+```{r isolate-counts}
+n_total_isolates <- n_distinct(cPCR_init$Isolate_ID)
+
+n_isolate_phyla    <- n_distinct(cPCR_init$Phylum)
+n_isolate_classes  <- n_distinct(cPCR_init$Class)
+n_isolate_orders   <- n_distinct(cPCR_init$Order)
+n_isolate_families <- n_distinct(cPCR_init$Family)
+n_isolate_genera   <- n_distinct(cPCR_init$Genus)
+n_isolate_species  <- n_distinct(cPCR_init$Species)
+
+cat(sprintf("Total isolates: %d\n", n_total_isolates))
+cat(sprintf("Phyla: %d | Classes: %d | Orders: %d | Families: %d | Genera: %d | Species: %d\n",
+            n_isolate_phyla, n_isolate_classes, n_isolate_orders,
+            n_isolate_families, n_isolate_genera, n_isolate_species))
+```
+
+## 8c. Isolate counts by class
+
+```{r isolate-class-counts}
+isolate_class_counts <- cPCR_init %>%
+  group_by(Class) %>%
+  summarise(n = n_distinct(Isolate_ID), .groups = "drop") %>%
+  arrange(desc(n))
+
+print(isolate_class_counts)
+
+# Store for inline use
+n_iso_gamma   <- isolate_class_counts$n[isolate_class_counts$Class == "Gammaproteobacteria"]
+n_iso_bacilli <- isolate_class_counts$n[isolate_class_counts$Class == "Bacilli"]
+n_iso_actino  <- isolate_class_counts$n[isolate_class_counts$Class == "Actinomycetes"]
+n_iso_alpha   <- isolate_class_counts$n[isolate_class_counts$Class == "Alphaproteobacteria"]
+```
+
+## 8d. Isolate counts by family
+
+```{r isolate-family-counts}
+isolate_family_counts <- cPCR_init %>%
+  group_by(Family) %>%
+  summarise(n = n_distinct(Isolate_ID), .groups = "drop") %>%
+  arrange(desc(n))
+
+print(isolate_family_counts)
+
+# Top families for inline use
+top_fam <- isolate_family_counts %>% slice_head(n = 4)
+n_fam_1 <- top_fam$n[1]; name_fam_1 <- top_fam$Family[1]
+n_fam_2 <- top_fam$n[2]; name_fam_2 <- top_fam$Family[2]
+n_fam_3 <- top_fam$n[3]; name_fam_3 <- top_fam$Family[3]
+n_fam_4 <- top_fam$n[4]; name_fam_4 <- top_fam$Family[4]
+
+# Families with fewer than 3 isolates
+n_small_families <- sum(isolate_family_counts$n < 3)
+```
+
+## 8e. Percent of amplicon families represented by isolates
+
+```{r isolate-amplicon-overlap}
+amplicon_families <- unique(na.omit(tax_f$Family))
+isolate_families <- unique(cPCR_init$Family)
+n_shared_families <- length(intersect(amplicon_families, isolate_families))
+pct_families_cultured <- round(100 * n_shared_families / length(amplicon_families))
+
+cat(sprintf(
+  "Isolate families represented in amplicon data: %d / %d (~%d%%)\n",
+  n_shared_families, length(amplicon_families), pct_families_cultured
+))
+```
+
+## 8f. Percent of community abundance represented by isolates
+
+```{r isolate-community-coverage}
+isolate_genera_list <- unique(cPCR_init$Genus)
+
+taxa_matching <- taxa_names(Nano_filtered)[
+  tax_table(Nano_filtered)[, "Genus"] %in% isolate_genera_list
+]
+
+relabund_all <- taxa_sums(transform_sample_counts(Nano_filtered, function(x) x / sum(x)))
+iso_abund <- sum(relabund_all[taxa_matching], na.rm = TRUE)
+total_abund <- sum(relabund_all, na.rm = TRUE)
+pct_community_cultured <- round(100 * iso_abund / total_abund, 2)
+
+cat(sprintf(
+  "Percent of total relative abundance represented by isolate genera: %.2f%%\n",
+  pct_community_cultured
+))
+```
+
+## 8g. Isolate manuscript inline code reference
+
+Use these inline R expressions in your manuscript Rmd:
+
+- Total isolates: `` `r n_total_isolates` ``
+- Gammaproteobacteria isolates: `` `r n_iso_gamma` ``
+- Bacilli isolates: `` `r n_iso_bacilli` ``
+- Actinomycetes isolates: `` `r n_iso_actino` ``
+- Alphaproteobacteria isolates: `` `r n_iso_alpha` ``
+- Unique families: `` `r n_isolate_families` ``
+- Unique genera: `` `r n_isolate_genera` ``
+- Unique species: `` `r n_isolate_species` ``
+- Top family 1: `` `r name_fam_1` `` (n=`` `r n_fam_1` ``)
+- Top family 2: `` `r name_fam_2` `` (n=`` `r n_fam_2` ``)
+- Top family 3: `` `r name_fam_3` `` (n=`` `r n_fam_3` ``)
+- Top family 4: `` `r name_fam_4` `` (n=`` `r n_fam_4` ``)
+- Families with < 3 isolates: `` `r n_small_families` ``
+- % amplicon families cultured: `` `r pct_families_cultured` ``
+- % community abundance cultured: `` `r pct_community_cultured` ``
+
+# 9. Isolate Barplots — Nested Class to Genus (microshades)
+
+```{r isolate-prep}
+# Remap isolate compartment labels
+isolate_compartment_labels <- c(
+  "ZR" = "Rhizosphere",
+  "ZP" = "Rhizoplane",
+  "ZE" = "Endosphere"
+)
+
+isolate_plot_data <- cPCR_init %>%
+  filter(Compartment %in% c("ZR", "ZP", "ZE")) %>%
+  mutate(
+    Compartment = factor(
+      isolate_compartment_labels[Compartment],
+      levels = c("Rhizosphere", "Rhizoplane", "Endosphere")
+    )
+  )
+```
+
+```{r isolate-nested-barplot, fig.width=12, fig.height=7}
+# Build summary: count isolates per Class + Genus per Compartment
+iso_summary <- isolate_plot_data %>%
+  group_by(Compartment, Class, Genus) %>%
+  summarise(Count = n(), .groups = "drop")
+
+# Calculate relative abundance within each compartment
+iso_summary <- iso_summary %>%
+  group_by(Compartment) %>%
+  mutate(RelAbundance = Count / sum(Count)) %>%
+  ungroup()
+
+# Order classes by total abundance (descending)
+class_order <- iso_summary %>%
+  group_by(Class) %>%
+  summarise(Total = sum(Count), .groups = "drop") %>%
+  arrange(desc(Total)) %>%
+  pull(Class)
+
+iso_summary$Class <- factor(iso_summary$Class, levels = class_order)
+
+# Within each class, order genera by abundance (descending)
+genus_order_within_class <- iso_summary %>%
+  group_by(Class, Genus) %>%
+  summarise(Total = sum(Count), .groups = "drop") %>%
+  arrange(Class, desc(Total)) %>%
+  pull(Genus)
+
+iso_summary$Genus <- factor(iso_summary$Genus, levels = unique(genus_order_within_class))
+
+# Generate shade colors for each genus within its class
+# Uses the same base hues as class_colors (ASV barplot) for visual consistency
+# Gradient: lightened → base → darkened for better contrast
+lighten <- function(hex, factor = 0.3) {
+  col <- col2rgb(hex)
+  rgb(col[1] + (255 - col[1]) * factor,
+      col[2] + (255 - col[2]) * factor,
+      col[3] + (255 - col[3]) * factor, maxColorValue = 255)
+}
+darken <- function(hex, factor = 0.25) {
+  col <- col2rgb(hex)
+  rgb(col[1] * (1 - factor), col[2] * (1 - factor), col[3] * (1 - factor),
+      maxColorValue = 255)
+}
+
+shade_colors <- c()
+genus_to_class <- c()
+for (cls in class_order) {
+  genera_in_cls <- iso_summary %>%
+    filter(Class == cls) %>%
+    group_by(Genus) %>%
+    summarise(Total = sum(Count), .groups = "drop") %>%
+    arrange(desc(Total)) %>%
+    pull(Genus) %>%
+    as.character()
+
+  n_gen <- length(genera_in_cls)
+  base_hex <- if (cls %in% names(class_colors)) class_colors[[cls]] else "#7E756D"
+  light_hex <- lighten(base_hex, 0.3)
+  dark_hex <- darken(base_hex, 0.25)
+  base_pal <- colorRampPalette(c(light_hex, base_hex, dark_hex))(max(n_gen, 2))
+
+  genus_shades <- setNames(base_pal[seq_len(n_gen)], genera_in_cls)
+  shade_colors <- c(shade_colors, genus_shades)
+  genus_to_class <- c(genus_to_class, setNames(rep(cls, n_gen), genera_in_cls))
+}
+
+# Legend labels: "Class: Genus" so the reader can identify both
+iso_summary$Legend_label <- paste0(iso_summary$Class, ": ", iso_summary$Genus)
+legend_order <- paste0(
+  genus_to_class[levels(iso_summary$Genus)], ": ",
+  levels(iso_summary$Genus)
+)
+iso_summary$Legend_label <- factor(iso_summary$Legend_label, levels = legend_order)
+names(shade_colors) <- paste0(genus_to_class[names(shade_colors)], ": ", names(shade_colors))
+
+ggplot(iso_summary, aes(x = Compartment, y = RelAbundance, fill = Legend_label)) +
+  geom_bar(stat = "identity", color = "white", linewidth = 0.2) +
+  scale_fill_manual(values = shade_colors) +
+  theme_bw(base_size = 14) +
+  labs(
+    x = "Compartment",
+    y = "Relative Abundance",
+    fill = "Class: Genus"
+  ) +
+  theme(
+    legend.text = element_text(size = 7),
+    legend.key.size = unit(0.35, "cm"),
+    legend.position = "right"
+  ) +
+  scale_y_continuous(labels = percent_format()) +
+  guides(fill = guide_legend(ncol = 1))
+```
+
+# 10. Alpha & Beta Diversity
+
+## 10a. Prepare data (remove control)
+
+```{r diversity-prep}
+# Remove control sample (barcode10) for diversity analyses
+Nano_no_control <- prune_samples(sample_names(Nano_filtered) != "barcode10", Nano_filtered)
+
+# Add compartment display labels to sample data
+sample_data(Nano_no_control)$Compartment_label <- compartment_labels[
+  as.character(sample_data(Nano_no_control)$compartment)
+]
+sample_data(Nano_no_control)$Compartment_label <- factor(
+  sample_data(Nano_no_control)$Compartment_label,
+  levels = c("Rhizosphere", "Rhizoplane", "Endosphere")
+)
+
+# Compartment colors (using class_colors base hues for consistency)
+compartment_colors <- c(
+  "Rhizosphere" = "#a7c0a8",
+  "Rhizoplane"  = "#839daf",
+  "Endosphere"  = "#c0728b"
+)
+```
+
+## 10b. Alpha diversity
+
+```{r alpha-diversity, fig.width=8, fig.height=5}
+alpha_plot <- plot_richness(
+  Nano_no_control, x = "Compartment_label",
+  measures = c("Shannon", "Simpson"),
+  color = "Compartment_label"
+) +
+  geom_point(size = 4) +
+  scale_color_manual(values = compartment_colors) +
+  theme_bw(base_size = 14) +
+  labs(x = "Compartment", color = "Compartment") +
+  theme(
+    axis.text.x = element_text(size = 12),
+    strip.text = element_text(face = "bold")
+  )
+alpha_plot
+```
+
+## 10c. Beta diversity (PCoA, Bray-Curtis)
+
+```{r beta-diversity-pcoa, fig.width=8, fig.height=6}
+bray_dist <- phyloseq::distance(Nano_no_control, method = "bray")
+ord_pcoa <- ordinate(Nano_no_control, method = "PCoA", distance = bray_dist)
+
+pcoa_plot <- plot_ordination(
+  Nano_no_control, ord_pcoa,
+  color = "Compartment_label"
+) +
+  geom_point(size = 5) +
+  scale_color_manual(values = compartment_colors) +
+  theme_bw(base_size = 14) +
+  labs(color = "Compartment") +
+  stat_ellipse(type = "t", linetype = 2, level = 0.95)
+pcoa_plot
+```
+
+## 10d. PERMANOVA (Bray-Curtis by compartment)
+
+```{r permanova}
+otu_mat_perm <- as(otu_table(Nano_no_control), "matrix")
+# Ensure samples are rows for adonis2
+if (taxa_are_rows(Nano_no_control)) {
+  otu_mat_perm <- t(otu_mat_perm)
+}
+meta_perm <- as(sample_data(Nano_no_control), "data.frame")
+
+set.seed(42)
+permanova_result <- adonis2(
+  otu_mat_perm ~ compartment,
+  data = meta_perm,
+  permutations = 999,
+  method = "bray"
+)
+permanova_result
+```
+
+## 10e. Pairwise PERMANOVA
+
+```{r pairwise-permanova}
+# Test which specific compartment pairs differ significantly
+compartments <- unique(meta_perm$compartment)
+pairs <- combn(compartments, 2, simplify = FALSE)
+
+pairwise_results <- lapply(pairs, function(pair) {
+  idx <- meta_perm$compartment %in% pair
+  set.seed(42)
+  res <- adonis2(
+    otu_mat_perm[idx, ] ~ compartment,
+    data = meta_perm[idx, ],
+    permutations = 999,
+    method = "bray"
+  )
+  data.frame(
+    Pair = paste(pair, collapse = " vs "),
+    F_value = res$F[1],
+    R2 = round(res$R2[1], 4),
+    p_value = res$`Pr(>F)`[1]
+  )
+})
+
+pairwise_df <- do.call(rbind, pairwise_results)
+# Bonferroni correction for multiple comparisons
+pairwise_df$p_adjusted <- p.adjust(pairwise_df$p_value, method = "bonferroni")
+pairwise_df
+```
+
+## 10f. PERMDISP (test for homogeneity of dispersions)
+
+```{r permdisp}
+# Tests whether group differences could be driven by dispersion (variance)
+# rather than location (centroid shifts)
+bray_dist_perm <- vegdist(otu_mat_perm, method = "bray")
+betadisp_result <- betadisper(bray_dist_perm, meta_perm$compartment)
+
+# ANOVA on distances to centroids
+permutest_result <- permutest(betadisp_result, permutations = 999)
+permutest_result
+
+# Pairwise comparisons of dispersion
+TukeyHSD(betadisp_result)
+```
