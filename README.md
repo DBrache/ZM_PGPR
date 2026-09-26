@@ -3,7 +3,7 @@
 Data and scripts for **"Identification of bacterial candidates that promote the growth of the seagrass *Zostera marina*"** (Brache-Smith, Badillo, Maeda, Sogin).
 
 - Raw reads (WGS + 16S Nanopore amplicons): NCBI BioProject **PRJNA1260012**
-- Processed data archive (NanoASV output, colony PCR FASTAs, ASV/taxonomy/metadata tables): Zenodo — DOI https://doi.org/10.5281/zenodo.19102534
+- Processed data archive (NanoASV output, colony PCR FASTAs, ASV/taxonomy/metadata tables; Metage2Metabo SBML networks and outputs): Zenodo — DOI https://doi.org/10.5281/zenodo.19102533
 - Genome assemblies: NCBI GenBank (accessions in Supplementary Table 3)
 
 ---
@@ -19,6 +19,10 @@ scripts/
 └── 05_MinCom/              Metage2Metabo minimal-community selection
 ```
 
+
+## License
+
+Code in this repository is released under the MIT License (see `LICENSE`). Data archived on Zenodo are CC BY 4.0.
 
 ## Citation
 

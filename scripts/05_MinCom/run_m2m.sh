@@ -32,11 +32,19 @@ m2m mincom \
   -t "$TARGETS" \
   -q
 
+# --- Step 2b: Community scope of the full pool of 61 isolates
+m2m cscope \
+  -n "$RECON_DIR/sbml" \
+  -s "$SEEDS" \
+  -o "$RUN_DIR/cscope_20260121" \
+  -t "$TARGETS" \
+  -q
+
 # --- Step 3a: Community scope for 5-member MinCom (MinCom-5)
 m2m cscope \
   -n "$RUN_DIR/mincom_w_5" \
   -s "$SEEDS" \
-  -o "$RUN_DIR/scope_w_5_20260121" \
+  -o "$RUN_DIR/cscope_w_5_20260121" \
   -t "$TARGETS" \
   -q
 

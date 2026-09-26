@@ -1,0 +1,27 @@
+{
+    "seeds": {
+        "essential_symbionts": {
+            "data": [
+                "Roseibium_195",
+                "Mesobacillus_127",
+                "Streptomyces_23"
+            ]
+        },
+        "alternative_symbionts": {
+            "data": [
+                "Pseudoalteromonas_259",
+                "Anaerobacillus_413",
+                "Streptomyces_121",
+                "Anaerobacillus_206",
+                "Peribacillus_49",
+                "Anaerobacillus_430",
+                "Anaerobacillus_322",
+                "Pseudoalteromonas_204",
+                "Streptomyces_385",
+                "Streptomyces_22",
+                "Anaerobacillus_228",
+                "Streptomyces_384"
+            ]
+        }
+    }
+}

@@ -1,0 +1,2 @@
+categories	nb_target	size_min_sol	size_union	size_intersection	size_enum
+seeds	30	5	15	3	32

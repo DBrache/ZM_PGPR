@@ -1,0 +1,1177 @@
+{
+    "alternative_symbionts": [
+        "Streptomyces_121",
+        "Anaerobacillus_228",
+        "Streptomyces_22",
+        "Anaerobacillus_430",
+        "Peribacillus_49",
+        "Anaerobacillus_413",
+        "Anaerobacillus_206",
+        "Pseudoalteromonas_259",
+        "Streptomyces_384",
+        "Streptomyces_385",
+        "Anaerobacillus_322",
+        "Pseudoalteromonas_204"
+    ],
+    "bacteria": [
+        "Peribacillus_49",
+        "Streptomyces_384",
+        "Roseibium_195",
+        "Mesobacillus_127",
+        "Streptomyces_23"
+    ],
+    "essential_symbionts": [
+        "Roseibium_195",
+        "Mesobacillus_127",
+        "Streptomyces_23"
+    ],
+    "exchanged": [],
+    "inter_bacteria": [
+        "Roseibium_195",
+        "Mesobacillus_127",
+        "Streptomyces_23"
+    ],
+    "inter_exchanged": [],
+    "inter_targetsproducers": {
+        "M_AMMONIA_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_AMMONIUM_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_ARG_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_ENTEROBACTIN_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c": [
+            "Mesobacillus_127",
+            "Roseibium_195",
+            "Streptomyces_23"
+        ],
+        "M_FORMALDEHYDE_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_FORMATE_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_GLN_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_GLT_c": [
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Mesobacillus_127"
+        ],
+        "M_GLUCONATE_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_HCO3_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_HSCN_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_HSO3_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_INDOLEYL__45__CPD_c": [
+            "Streptomyces_23"
+        ],
+        "M_INDOLE_ACETALDEHYDE_c": [
+            "Roseibium_195"
+        ],
+        "M_INDOLE_ACETATE_AUXIN_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_INDOLE_PYRUVATE_c": [
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Mesobacillus_127"
+        ],
+        "M_INDOLE__45__3__45__GLYCEROL__45__P_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_INDOLE_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_MYO__45__INOSITOL_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_NITRIC__45__OXIDE_c": [
+            "Roseibium_195"
+        ],
+        "M_PPI_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_PUTRESCINE_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_Pi_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_S2O3_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_SO3_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_SPERMIDINE_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_SULFATE_c": [
+            "Mesobacillus_127"
+        ],
+        "M_TRP_c": [
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ]
+    },
+    "key_species": [
+        "Peribacillus_49",
+        "Anaerobacillus_228",
+        "Anaerobacillus_322",
+        "Streptomyces_22",
+        "Pseudoalteromonas_204",
+        "Anaerobacillus_413",
+        "Anaerobacillus_430",
+        "Streptomyces_384",
+        "Roseibium_195",
+        "Streptomyces_121",
+        "Mesobacillus_127",
+        "Anaerobacillus_206",
+        "Pseudoalteromonas_259",
+        "Streptomyces_385",
+        "Streptomyces_23"
+    ],
+    "newly_prod": [
+        "M_GLUCONATE_c",
+        "M_AMMONIA_c",
+        "M_TRP_c",
+        "M_DIHYDROXYINDOLE_c",
+        "M_HSO3_c",
+        "M_INDOLE_ACETATE_AUXIN_c",
+        "M_PUTRESCINE_c",
+        "M_GLT_c",
+        "M_SULFATE_c",
+        "M_ARG_c",
+        "M_INDOLE_ACETALDEHYDE_c",
+        "M_FORMATE_c",
+        "M_Pi_c",
+        "M_FORMALDEHYDE_c",
+        "M_SO3_c",
+        "M_S2O3_c",
+        "M_PPI_c",
+        "M_SPERMIDINE_c",
+        "M_AMMONIUM_c",
+        "M_INDOLEYL__45__CPD_c",
+        "M_INDOLE__45__3__45__GLYCEROL__45__P_c",
+        "M_GLN_c",
+        "M_HSCN_c",
+        "M_ENTEROBACTIN_c",
+        "M_NITRIC__45__OXIDE_c",
+        "M_MYO__45__INOSITOL_c",
+        "M_INDOLE_PYRUVATE_c",
+        "M_INDOLE_c",
+        "M_HCO3_c",
+        "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c"
+    ],
+    "one_model": {
+        "chosen_bacteria": [
+            "Peribacillus_49",
+            "Streptomyces_384",
+            "Roseibium_195",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "newly_producible_target": [
+            "M_GLUCONATE_c",
+            "M_AMMONIA_c",
+            "M_TRP_c",
+            "M_DIHYDROXYINDOLE_c",
+            "M_HSO3_c",
+            "M_INDOLE_ACETATE_AUXIN_c",
+            "M_PUTRESCINE_c",
+            "M_GLT_c",
+            "M_SULFATE_c",
+            "M_ARG_c",
+            "M_INDOLE_ACETALDEHYDE_c",
+            "M_FORMATE_c",
+            "M_Pi_c",
+            "M_FORMALDEHYDE_c",
+            "M_SO3_c",
+            "M_S2O3_c",
+            "M_PPI_c",
+            "M_SPERMIDINE_c",
+            "M_AMMONIUM_c",
+            "M_INDOLEYL__45__CPD_c",
+            "M_INDOLE__45__3__45__GLYCEROL__45__P_c",
+            "M_GLN_c",
+            "M_HSCN_c",
+            "M_ENTEROBACTIN_c",
+            "M_NITRIC__45__OXIDE_c",
+            "M_MYO__45__INOSITOL_c",
+            "M_INDOLE_PYRUVATE_c",
+            "M_INDOLE_c",
+            "M_HCO3_c",
+            "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c"
+        ],
+        "producible_target": [
+            "M_GLUCONATE_c",
+            "M_AMMONIA_c",
+            "M_TRP_c",
+            "M_DIHYDROXYINDOLE_c",
+            "M_HSO3_c",
+            "M_INDOLE_ACETATE_AUXIN_c",
+            "M_PUTRESCINE_c",
+            "M_GLT_c",
+            "M_SULFATE_c",
+            "M_ARG_c",
+            "M_INDOLE_ACETALDEHYDE_c",
+            "M_FORMATE_c",
+            "M_Pi_c",
+            "M_FORMALDEHYDE_c",
+            "M_SO3_c",
+            "M_S2O3_c",
+            "M_PPI_c",
+            "M_SPERMIDINE_c",
+            "M_AMMONIUM_c",
+            "M_INDOLEYL__45__CPD_c",
+            "M_INDOLE__45__3__45__GLYCEROL__45__P_c",
+            "M_GLN_c",
+            "M_HSCN_c",
+            "M_ENTEROBACTIN_c",
+            "M_NITRIC__45__OXIDE_c",
+            "M_MYO__45__INOSITOL_c",
+            "M_INDOLE_PYRUVATE_c",
+            "M_INDOLE_c",
+            "M_HCO3_c",
+            "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c"
+        ],
+        "target_producer_coop_selectedcom": {
+            "M_AMMONIA_c": [
+                "Peribacillus_49",
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Streptomyces_23"
+            ],
+            "M_AMMONIUM_c": [
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195"
+            ],
+            "M_ARG_c": [
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49"
+            ],
+            "M_DIHYDROXYINDOLE_c": [
+                "Streptomyces_384"
+            ],
+            "M_ENTEROBACTIN_c": [
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23"
+            ],
+            "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c": [
+                "Mesobacillus_127",
+                "Peribacillus_49",
+                "Roseibium_195",
+                "Streptomyces_23",
+                "Streptomyces_384"
+            ],
+            "M_FORMALDEHYDE_c": [
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23"
+            ],
+            "M_FORMATE_c": [
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Peribacillus_49",
+                "Roseibium_195"
+            ],
+            "M_GLN_c": [
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195",
+                "Streptomyces_384"
+            ],
+            "M_GLT_c": [
+                "Peribacillus_49",
+                "Streptomyces_23",
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Mesobacillus_127"
+            ],
+            "M_GLUCONATE_c": [
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23"
+            ],
+            "M_HCO3_c": [
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Peribacillus_49",
+                "Roseibium_195"
+            ],
+            "M_HSCN_c": [
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49"
+            ],
+            "M_HSO3_c": [
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195"
+            ],
+            "M_INDOLEYL__45__CPD_c": [
+                "Streptomyces_23"
+            ],
+            "M_INDOLE_ACETALDEHYDE_c": [
+                "Peribacillus_49",
+                "Roseibium_195"
+            ],
+            "M_INDOLE_ACETATE_AUXIN_c": [
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Streptomyces_23"
+            ],
+            "M_INDOLE_PYRUVATE_c": [
+                "Streptomyces_23",
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Peribacillus_49"
+            ],
+            "M_INDOLE__45__3__45__GLYCEROL__45__P_c": [
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Peribacillus_49"
+            ],
+            "M_INDOLE_c": [
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195"
+            ],
+            "M_MYO__45__INOSITOL_c": [
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195"
+            ],
+            "M_NITRIC__45__OXIDE_c": [
+                "Roseibium_195"
+            ],
+            "M_PPI_c": [
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195"
+            ],
+            "M_PUTRESCINE_c": [
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49"
+            ],
+            "M_Pi_c": [
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49"
+            ],
+            "M_S2O3_c": [
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Peribacillus_49",
+                "Roseibium_195"
+            ],
+            "M_SO3_c": [
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Peribacillus_49",
+                "Roseibium_195",
+                "Streptomyces_384"
+            ],
+            "M_SPERMIDINE_c": [
+                "Streptomyces_384",
+                "Mesobacillus_127",
+                "Streptomyces_23",
+                "Peribacillus_49",
+                "Roseibium_195"
+            ],
+            "M_SULFATE_c": [
+                "Mesobacillus_127"
+            ],
+            "M_TRP_c": [
+                "Roseibium_195",
+                "Streptomyces_384",
+                "Peribacillus_49",
+                "Mesobacillus_127",
+                "Streptomyces_23"
+            ]
+        }
+    },
+    "one_model_targetsproducers": {
+        "M_AMMONIA_c": [
+            "Peribacillus_49",
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_AMMONIUM_c": [
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_ARG_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49"
+        ],
+        "M_DIHYDROXYINDOLE_c": [
+            "Streptomyces_384"
+        ],
+        "M_ENTEROBACTIN_c": [
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c": [
+            "Mesobacillus_127",
+            "Peribacillus_49",
+            "Roseibium_195",
+            "Streptomyces_23",
+            "Streptomyces_384"
+        ],
+        "M_FORMALDEHYDE_c": [
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_FORMATE_c": [
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Roseibium_195"
+        ],
+        "M_GLN_c": [
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Streptomyces_384"
+        ],
+        "M_GLT_c": [
+            "Peribacillus_49",
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Mesobacillus_127"
+        ],
+        "M_GLUCONATE_c": [
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_HCO3_c": [
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Roseibium_195"
+        ],
+        "M_HSCN_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49"
+        ],
+        "M_HSO3_c": [
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_INDOLEYL__45__CPD_c": [
+            "Streptomyces_23"
+        ],
+        "M_INDOLE_ACETALDEHYDE_c": [
+            "Peribacillus_49",
+            "Roseibium_195"
+        ],
+        "M_INDOLE_ACETATE_AUXIN_c": [
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ],
+        "M_INDOLE_PYRUVATE_c": [
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Peribacillus_49"
+        ],
+        "M_INDOLE__45__3__45__GLYCEROL__45__P_c": [
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Peribacillus_49"
+        ],
+        "M_INDOLE_c": [
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_MYO__45__INOSITOL_c": [
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_NITRIC__45__OXIDE_c": [
+            "Roseibium_195"
+        ],
+        "M_PPI_c": [
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195"
+        ],
+        "M_PUTRESCINE_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49"
+        ],
+        "M_Pi_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49"
+        ],
+        "M_S2O3_c": [
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Roseibium_195"
+        ],
+        "M_SO3_c": [
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Roseibium_195",
+            "Streptomyces_384"
+        ],
+        "M_SPERMIDINE_c": [
+            "Streptomyces_384",
+            "Mesobacillus_127",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Roseibium_195"
+        ],
+        "M_SULFATE_c": [
+            "Mesobacillus_127"
+        ],
+        "M_TRP_c": [
+            "Roseibium_195",
+            "Streptomyces_384",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Streptomyces_23"
+        ]
+    },
+    "producible": [
+        "M_GLUCONATE_c",
+        "M_AMMONIA_c",
+        "M_TRP_c",
+        "M_DIHYDROXYINDOLE_c",
+        "M_HSO3_c",
+        "M_INDOLE_ACETATE_AUXIN_c",
+        "M_PUTRESCINE_c",
+        "M_GLT_c",
+        "M_SULFATE_c",
+        "M_ARG_c",
+        "M_INDOLE_ACETALDEHYDE_c",
+        "M_FORMATE_c",
+        "M_Pi_c",
+        "M_FORMALDEHYDE_c",
+        "M_SO3_c",
+        "M_S2O3_c",
+        "M_PPI_c",
+        "M_SPERMIDINE_c",
+        "M_AMMONIUM_c",
+        "M_INDOLEYL__45__CPD_c",
+        "M_INDOLE__45__3__45__GLYCEROL__45__P_c",
+        "M_GLN_c",
+        "M_HSCN_c",
+        "M_ENTEROBACTIN_c",
+        "M_NITRIC__45__OXIDE_c",
+        "M_MYO__45__INOSITOL_c",
+        "M_INDOLE_PYRUVATE_c",
+        "M_INDOLE_c",
+        "M_HCO3_c",
+        "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c"
+    ],
+    "score_optimum_inter": "5",
+    "score_optimum_union": "5",
+    "still_unprod": [],
+    "union_bacteria": [
+        "Peribacillus_49",
+        "Anaerobacillus_228",
+        "Anaerobacillus_322",
+        "Streptomyces_22",
+        "Pseudoalteromonas_204",
+        "Anaerobacillus_413",
+        "Anaerobacillus_430",
+        "Streptomyces_384",
+        "Roseibium_195",
+        "Streptomyces_121",
+        "Mesobacillus_127",
+        "Anaerobacillus_206",
+        "Pseudoalteromonas_259",
+        "Streptomyces_385",
+        "Streptomyces_23"
+    ],
+    "union_exchanged": [],
+    "union_targetsproducers": {
+        "M_AMMONIA_c": [
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Anaerobacillus_206",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_23"
+        ],
+        "M_AMMONIUM_c": [
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_23",
+            "Streptomyces_22"
+        ],
+        "M_ARG_c": [
+            "Mesobacillus_127",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_322",
+            "Streptomyces_23",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Streptomyces_22"
+        ],
+        "M_DIHYDROXYINDOLE_c": [
+            "Streptomyces_121",
+            "Streptomyces_384",
+            "Streptomyces_22",
+            "Streptomyces_385"
+        ],
+        "M_ENTEROBACTIN_c": [
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Streptomyces_23",
+            "Streptomyces_22"
+        ],
+        "M_FERRIC__45__ENTEROBACTIN__45__COMPLEX_c": [
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Streptomyces_23",
+            "Anaerobacillus_430",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384"
+        ],
+        "M_FORMALDEHYDE_c": [
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_23",
+            "Streptomyces_22"
+        ],
+        "M_FORMATE_c": [
+            "Anaerobacillus_430",
+            "Anaerobacillus_206",
+            "Streptomyces_23",
+            "Streptomyces_22",
+            "Peribacillus_49",
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322"
+        ],
+        "M_GLN_c": [
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Mesobacillus_127",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_322",
+            "Streptomyces_23"
+        ],
+        "M_GLT_c": [
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_322",
+            "Streptomyces_23",
+            "Anaerobacillus_430",
+            "Anaerobacillus_206"
+        ],
+        "M_GLUCONATE_c": [
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Mesobacillus_127",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Streptomyces_385",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Streptomyces_23"
+        ],
+        "M_HCO3_c": [
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Anaerobacillus_430",
+            "Anaerobacillus_206",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259"
+        ],
+        "M_HSCN_c": [
+            "Mesobacillus_127",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Streptomyces_23",
+            "Streptomyces_22",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49"
+        ],
+        "M_HSO3_c": [
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_23",
+            "Streptomyces_22",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195"
+        ],
+        "M_INDOLEYL__45__CPD_c": [
+            "Streptomyces_23"
+        ],
+        "M_INDOLE_ACETALDEHYDE_c": [
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Anaerobacillus_413",
+            "Pseudoalteromonas_259",
+            "Anaerobacillus_228",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Anaerobacillus_430"
+        ],
+        "M_INDOLE_ACETATE_AUXIN_c": [
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Streptomyces_23",
+            "Streptomyces_22",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Mesobacillus_127"
+        ],
+        "M_INDOLE_PYRUVATE_c": [
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_322",
+            "Streptomyces_23",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Streptomyces_22"
+        ],
+        "M_INDOLE__45__3__45__GLYCEROL__45__P_c": [
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Anaerobacillus_206",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Streptomyces_22"
+        ],
+        "M_INDOLE_c": [
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Streptomyces_23",
+            "Streptomyces_22",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195"
+        ],
+        "M_MYO__45__INOSITOL_c": [
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121",
+            "Streptomyces_23",
+            "Streptomyces_22",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Mesobacillus_127",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259"
+        ],
+        "M_NITRIC__45__OXIDE_c": [
+            "Roseibium_195"
+        ],
+        "M_PPI_c": [
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_23",
+            "Streptomyces_22"
+        ],
+        "M_PUTRESCINE_c": [
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_23",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49"
+        ],
+        "M_Pi_c": [
+            "Streptomyces_23",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Mesobacillus_127",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Streptomyces_385",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_228",
+            "Anaerobacillus_430",
+            "Streptomyces_121"
+        ],
+        "M_S2O3_c": [
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Anaerobacillus_206",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322"
+        ],
+        "M_SO3_c": [
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Anaerobacillus_206",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Streptomyces_385",
+            "Pseudoalteromonas_259"
+        ],
+        "M_SPERMIDINE_c": [
+            "Streptomyces_384",
+            "Streptomyces_23",
+            "Peribacillus_49",
+            "Streptomyces_22",
+            "Anaerobacillus_413",
+            "Pseudoalteromonas_259",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Roseibium_195",
+            "Anaerobacillus_322"
+        ],
+        "M_SULFATE_c": [
+            "Mesobacillus_127"
+        ],
+        "M_TRP_c": [
+            "Streptomyces_22",
+            "Streptomyces_385",
+            "Anaerobacillus_206",
+            "Peribacillus_49",
+            "Anaerobacillus_228",
+            "Mesobacillus_127",
+            "Streptomyces_121",
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_413",
+            "Roseibium_195",
+            "Anaerobacillus_322",
+            "Pseudoalteromonas_259",
+            "Streptomyces_384",
+            "Anaerobacillus_430",
+            "Streptomyces_23"
+        ]
+    }
+}
