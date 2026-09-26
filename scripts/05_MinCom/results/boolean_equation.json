@@ -1,0 +1,30 @@
+{
+    "boolean_equation": "(( Pseudoalteromonas_204 | Anaerobacillus_430 | Anaerobacillus_413 | Peribacillus_49 | Anaerobacillus_228 | Pseudoalteromonas_259 | Anaerobacillus_322 | Anaerobacillus_206 ) & ( Roseibium_195 ) & ( Streptomyces_384 | Streptomyces_385 | Streptomyces_22 | Streptomyces_121 ) & ( Mesobacillus_127 ) & ( Streptomyces_23 ) )",
+    "bacterial_groups": [
+        [
+            "Pseudoalteromonas_204",
+            "Anaerobacillus_430",
+            "Anaerobacillus_413",
+            "Peribacillus_49",
+            "Anaerobacillus_228",
+            "Pseudoalteromonas_259",
+            "Anaerobacillus_322",
+            "Anaerobacillus_206"
+        ],
+        [
+            "Roseibium_195"
+        ],
+        [
+            "Streptomyces_384",
+            "Streptomyces_385",
+            "Streptomyces_22",
+            "Streptomyces_121"
+        ],
+        [
+            "Mesobacillus_127"
+        ],
+        [
+            "Streptomyces_23"
+        ]
+    ]
+}
